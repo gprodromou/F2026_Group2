@@ -13,11 +13,15 @@ Node.js + Express server with a SQLite database (better-sqlite3)
 2. `cd F2026_Group2/backend`
 3. `npm install` (downloads the libraries listed in package.json)
 4. Optional: copy `.env.example` to `.env` to change settings. The defaults work without it.
+5. `npm run migrate` (creates the tables in fitness.db)
+6. `npm run seed` (optional: adds demo data, login demo@example.com / demo1234)
 
 ### Commands (run inside the backend folder in terminal)
 - `npm run dev`: start the server, it restarts automatically when you save a file
 - `npm start`: start the server normally
 - `npm test`: run the automated tests
+-  `npm run migrate`: create or update the database tables
+- `npm run seed`: add demo data to the database
 
 The server runs at http://localhost:3000. To check it is working, open http://localhost:3000/health, which should show `{"status":"ok","database":"connected"}`.
 
@@ -26,4 +30,6 @@ The server runs at http://localhost:3000. To check it is working, open http://lo
 - `src/app.js`: the Express app and its routes
 - `src/config.js`: reads settings from .env
 - `src/db/connection.js`: the shared SQLite connection
+-  `migrations/`: the SQL files that build the database 
+- `src/db/migrate.js` and `src/db/seed.js`: run the migrations and add demo data
 - `tests/`: automated tests (Jest + Supertest)

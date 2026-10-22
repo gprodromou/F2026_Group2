@@ -1,0 +1,18 @@
+# Downloaded libraries. Don't upload them, anyone can get them back by running npm install.
+node_modules/
+
+# Private settings and passwords. Each person keeps their own copy.
+.env
+
+# Each person's local database file and the temporary files SQLite makes while saving.
+# Everyone has their own test data, so we don't share it.
+*.db
+*.db-journal
+
+# Hidden files computers create on their own. They're junk, not part of the project.
+# Mac
+.DS_Store
+# Windows (image previews)
+Thumbs.db
+# Windows (folder settings)
+desktop.ini

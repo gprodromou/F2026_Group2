@@ -1,0 +1,21 @@
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  background: color-mix(in srgb, var(--color-ink) 50%, transparent);
+}
+.modal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--card-gap);
+  width: min(100%, 30rem);
+  padding: var(--card-padding);
+  background: var(--color-white);
+  border: var(--card-border);
+  border-radius: var(--radius-bubble);
+  color: var(--color-text);
+}
+.modal__title { margin: 0; font-size: var(--font-size-xl); line-height: var(--line-height-tight); }

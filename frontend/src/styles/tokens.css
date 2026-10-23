@@ -1,0 +1,167 @@
+/* ==========================================================================
+   fit4you design tokens
+   Single source of truth for colours, type, spacing, shape and component
+   states. Imported ONCE in App.jsx. No component or page may use a loose
+   hex colour, px font size or magic spacing number: always var(--token).
+   ========================================================================== */
+
+/* Font: add this <link> to frontend/index.html instead if you prefer:
+   https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400;1,700&display=swap */
+@import url("https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400;1,700&display=swap");
+
+:root {
+  /* ---------- 1. COLOUR: brand green (backgrounds, cards, header, footer) ---------- */
+  --color-green-100: #e6f3e3;        /* page gradient end, near white */
+  --color-green-300: #a9d0a6;        /* header + footer background */
+  --color-green-400: #68cf6c;        /* feature card + chat bubble fill (used at 80% opacity) */
+  --color-green-400-80: color-mix(in srgb, var(--color-green-400) 80%, transparent);
+  --color-green-500: #4caf50;        /* card border, active carousel dot */
+
+  /* ---------- 2. COLOUR: brand pink / magenta (actions, icons, login card) ---------- */
+  --color-pink-100: #d9a0d0;         /* secondary button hover */
+  --color-pink-200: #c294b4;         /* secondary button pressed */
+  --color-pink-500: #d43ab7;         /* primary button, icons, login border, login card fill */
+  --color-pink-500-50: color-mix(in srgb, var(--color-pink-500) 50%, transparent);  /* login card fill */
+  --color-pink-600: #b4319c;         /* primary button hover, darker pink-500 */
+  --color-pink-700: #942980;         /* primary button active / pressed */
+
+  /* ---------- 3. COLOUR: neutrals ---------- */
+  --color-white: #ffffff;
+  --color-grey-300: #bdbdbd;         /* input fill (used at 80% opacity) */
+  --color-grey-300-80: color-mix(in srgb, var(--color-grey-300) 80%, transparent);
+  --color-grey-400: #a89aa6;         /* disabled fill */
+  --color-grey-600: #6b6b6b;         /* muted text, social icons */
+  --color-ink: #333333;              /* main text + logo */
+
+  /* ---------- 4. COLOUR: links (error/status colours out of scope for now) ---------- */
+  --color-link: #0d6efd;             /* "Forgot Password?" / "Register Here" */
+  --color-link-hover: #0a58ca;       /* darker link */
+
+  /* ---------- 5. SEMANTIC COLOURS (components use THESE, not the raw ones) ---------- */
+  --color-bg: var(--color-white);
+  --color-bg-header: var(--color-green-300);
+  --color-bg-footer: var(--color-green-300);
+  --color-bg-card: var(--color-green-400-80);
+  --color-bg-card-login: var(--color-pink-500-50);
+  --color-bg-bubble: var(--color-green-400-80);
+  --color-bg-input: var(--color-grey-300-80);
+  --color-border-card: var(--color-green-500);
+  --color-border-card-login: var(--color-pink-500);
+  --color-text: var(--color-ink);
+  --color-text-muted: var(--color-grey-600);
+  --color-text-on-primary: var(--color-white);
+  --color-accent: var(--color-pink-500);
+  --color-focus-ring: var(--color-pink-700);
+
+  /* Page background: green fading to white (top to bottom) */
+  --gradient-page: linear-gradient(180deg, var(--color-green-300) 0%, var(--color-white) 100%);
+
+  /* ---------- 6. TYPOGRAPHY ---------- */
+  --font-family-base: "Merriweather", Georgia, "Times New Roman", serif;
+  --font-family-logo: "Merriweather", Georgia, serif;                     /* italic, bold */
+
+  --font-size-xs: 0.75rem;   /* 12px: input labels, small print */
+  --font-size-sm: 0.875rem;  /* 14px: footer, links, helper text */
+  --font-size-md: 1rem;      /* 16px: body, nav, buttons */
+  --font-size-lg: 1.25rem;   /* 20px: card text */
+  --font-size-xl: 1.75rem;   /* 28px: card headings, chat bubble */
+  --font-size-2xl: 2.5rem;   /* 40px: page headings ("Login") */
+  --font-size-logo: 4.5rem;  /* 72px: header logo */
+
+  --font-weight-regular: 400;
+  --font-weight-bold: 700;
+  --font-style-logo: italic;
+
+  --line-height-tight: 1.1;  /* card headings */
+  --line-height-base: 1.5;
+  --letter-spacing-wide: 0.08em;  /* card text has wide spacing */
+
+  /* ---------- 7. SPACING SCALE (4px step) ---------- */
+  --space-1: 0.25rem;  /* 4px */
+  --space-2: 0.5rem;   /* 8px */
+  --space-3: 0.75rem;  /* 12px */
+  --space-4: 1rem;     /* 16px */
+  --space-5: 1.5rem;   /* 24px */
+  --space-6: 2rem;     /* 32px */
+  --space-7: 3rem;     /* 48px */
+  --space-8: 4rem;     /* 64px */
+
+  /* ---------- 8. SHAPE ---------- */
+  --radius-sm: 0.25rem;   /* buttons */
+  --radius-md: 1.25rem;   /* inputs (pill-like) */
+  --radius-lg: 3.5rem;    /* feature cards, login card */
+  --radius-bubble: 1.5rem;
+  --radius-round: 50%;    /* carousel dots, icon circles */
+  --border-width: 3px;    /* card outlines */
+  --border-width-thin: 1px;
+  --color-focus-ring-soft: color-mix(in srgb, var(--color-pink-700) 35%, transparent);
+  --shadow-focus: 0 0 0 3px var(--color-focus-ring-soft);
+
+  /* ---------- 9. LAYOUT ---------- */
+  --header-height: 6.5rem;
+  --footer-height: 5rem;
+  --content-max-width: 75rem;
+  --breakpoint-sm: 40rem;   /* reference only: CSS vars can't be used in @media */
+  --breakpoint-md: 64rem;
+
+  /* ---------- 10. COMPONENT TOKENS ---------- */
+
+  /* Button: primary ("Sign in", "Sign In") */
+  --btn-primary-bg: var(--color-pink-500);
+  --btn-primary-bg-hover: var(--color-pink-600);
+  --btn-primary-bg-active: var(--color-pink-700);
+  --btn-primary-bg-disabled: var(--color-grey-400);
+  --btn-primary-text: var(--color-text-on-primary);
+
+  /* Button: secondary / outline ("Sign up") */
+  --btn-secondary-bg: var(--color-white);
+  --btn-secondary-bg-hover: var(--color-pink-100);
+  --btn-secondary-bg-active: var(--color-pink-200);
+  --btn-secondary-text: var(--color-pink-500);
+  --btn-secondary-border: var(--color-pink-500);
+
+  --btn-padding-y: var(--space-2);
+  --btn-padding-x: var(--space-4);
+  --btn-radius: var(--radius-sm);
+  --btn-font-size: var(--font-size-md);
+
+  /* Input ("Username or Email address", "Password") */
+  --input-bg: var(--color-bg-input);
+  --input-bg-focus: var(--color-white);
+  --input-bg-disabled: var(--color-grey-400);
+  --input-border: transparent;
+  --input-border-focus: var(--color-pink-700);
+  --input-text: var(--color-text);
+  --input-label-size: var(--font-size-xs);
+  --input-padding-y: var(--space-3);
+  --input-padding-x: var(--space-4);
+  --input-radius: var(--radius-md);
+
+  /* Nav links */
+  --nav-link-color: var(--color-text);
+  --nav-link-color-hover: var(--color-pink-500);
+  --nav-link-color-active: var(--color-pink-700);
+  --nav-gap: var(--space-5);
+
+  /* Cards */
+  --card-bg: var(--color-bg-card);
+  --card-border: var(--border-width) solid var(--color-border-card);
+  --card-radius: var(--radius-lg);
+  --card-padding: var(--space-6);
+  --card-gap: var(--space-4);
+
+  /* Carousel dots */
+  --dot-size: 1.1rem;
+  --dot-color: var(--color-white);
+  --dot-color-active: var(--color-green-500);
+
+  /* Chat bubble ("Chat with us!") */
+  --bubble-bg: var(--color-bg-bubble);
+  --bubble-border: var(--border-width-thin) dashed var(--color-green-500);
+  --bubble-radius: var(--radius-bubble);
+
+  /* Footer */
+  --footer-icon-color: var(--color-grey-600);
+  --footer-icon-color-hover: var(--color-pink-500);
+  --footer-icon-size: 1.5rem;
+}

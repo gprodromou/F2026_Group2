@@ -38,6 +38,9 @@ app.get('/health', (req, res) => {
   }
 });
 
+// The register and login routes (routes/auth.js), at /auth/register and /auth/login.
+app.use('/auth', require('./routes/auth'));
+
 // With this command we share the app with the rest of the project.
 // Two files get it with: const app = require('./app');
 //   - server.js, which starts it listening on a port (npm start / npm run dev)

@@ -41,6 +41,13 @@ app.get('/health', (req, res) => {
 // The register and login routes (routes/auth.js), at /auth/register and /auth/login.
 app.use('/auth', require('./routes/auth'));
 
+// Error handling (middleware/errors.js).
+// These two lines MUST stay after all the routes: Express checks everything from top to bottom,
+// so it only reaches these when no route above answered (notFound) or something broke (errorHandler).
+const errors = require('./middleware/errors');
+app.use(errors.notFound);
+app.use(errors.errorHandler);
+
 // With this command we share the app with the rest of the project.
 // Two files get it with: const app = require('./app');
 //   - server.js, which starts it listening on a port (npm start / npm run dev)

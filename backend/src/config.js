@@ -16,4 +16,9 @@ module.exports = {
 
   // The SQLite database file name. Same idea here as well, use DB_FILE from .env, or fitness.db if it is not set there.
   dbFile: process.env.DB_FILE || 'fitness.db',
+
+  // The server's private key for signing login tokens (JWTs) and checking them later.
+  // It has no default on purpose cause this file is on GitHub, so a default secret would be public, and anyone could use it to make fake tokens. 
+  // Each person sets their own in their .env.
+  jwtSecret: process.env.JWT_SECRET,
 };

@@ -20,8 +20,6 @@
 .field__input--error { border-color: var(--color-error, #c62828); }
 
 .field__error {
-  margin: 0;
+  /* keeps the space reserved so the layout does not jump when an error appears */
   min-height: calc(var(--font-size-sm) * var(--line-height-base));
-  font-size: var(--font-size-sm);
-  color: var(--color-error, #c62828);
 }

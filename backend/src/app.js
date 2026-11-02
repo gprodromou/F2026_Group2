@@ -41,6 +41,18 @@ app.get('/health', (req, res) => {
 // The register and login routes (routes/auth.js), at /auth/register and /auth/login.
 app.use('/auth', require('./routes/auth'));
 
+// The login guard (middleware/auth.js).
+const { requireAuth } = require('./middleware/auth');
+
+// GET /me: the first protected route.
+// /me is not a file. This line creates the address http://localhost:3000/me.
+// requireAuth runs first. The arrow function only runs if the token is real, and by then req.user is filled in, so we just send it back.
+// The website calls this when a page loads to ask "who is logged in?".
+// Visit it in the browser without a token and you get 401 "Login required".
+app.get('/me', requireAuth, (req, res) => {
+  res.json({ user: req.user });
+});
+
 // Error handling (middleware/errors.js).
 // These two lines MUST stay after all the routes: Express checks everything from top to bottom,
 // so it only reaches these when no route above answered (notFound) or something broke (errorHandler).

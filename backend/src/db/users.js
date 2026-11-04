@@ -21,4 +21,25 @@ function createUser(user) {
   return result.lastInsertRowid;
 }
 
-module.exports = { findUserByEmail, createUser };
+// Find one user by their id. Returns the user, or undefined if nobody has that id.
+function findUserById(userId) {
+  // SELECT = read. "?" is replaced by userId.
+  return db.prepare('SELECT * FROM users WHERE user_id = ?').get(userId);
+}
+
+// saveTotpSecret: save the user's secret key in the database.
+// The phone app uses this same key to make the 6-digit codes.
+// 2FA is still OFF after this. It turns on only when the user types a correct code.
+function saveTotpSecret(userId, secret) {
+  // UPDATE = change a user who already exists.
+  // The first "?" becomes secret, the second "?" becomes userId.
+  db.prepare('UPDATE users SET totp_secret = ? WHERE user_id = ?').run(secret, userId);
+}
+
+// Switch 2FA on for the user (0 = off, 1 = on).
+// From now on, this user needs a code from their phone to log in.
+function turnOnTwoFactor(userId) {
+  db.prepare('UPDATE users SET totp_enabled = 1 WHERE user_id = ?').run(userId);
+}
+// Share all the functions, so the routes can use them.
+module.exports = { findUserByEmail, createUser, findUserById, saveTotpSecret, turnOnTwoFactor };

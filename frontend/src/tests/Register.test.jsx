@@ -22,7 +22,7 @@ function renderRegister() {
       <Routes>
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<p>Login page</p>} />
-        <Route path="/" element={<p>Signed-in home</p>} />
+        <Route path="/two-factor/setup" element={<p>Two-factor setup page</p>} />
       </Routes>
     </MemoryRouter>
   );
@@ -141,7 +141,7 @@ describe('Register step 2', () => {
 });
 
 describe('Register complete', () => {
-  test('a valid form creates the account, logs in, saves the token and goes home', async () => {
+  test('a valid form creates the account, logs in, saves the token and goes to the two-factor setup', async () => {
     mockFetch({ status: 201, body: { userId: 1 } }, { status: 200, body: { token: 'abc.def.ghi' } });
     renderRegister();
     fillStep1();
@@ -149,7 +149,7 @@ describe('Register complete', () => {
     fillStep2();
     press('Complete');
 
-    expect(await screen.findByText('Signed-in home')).toBeTruthy();
+    expect(await screen.findByText('Two-factor setup page')).toBeTruthy();
     expect(localStorage.getItem('token')).toBe('abc.def.ghi');
 
     const [registerUrl, registerOptions] = global.fetch.mock.calls[0];
@@ -178,7 +178,7 @@ describe('Register complete', () => {
     type('Weight units', 'lb');
     press('Complete');
 
-    await screen.findByText('Signed-in home');
+    await screen.findByText('Two-factor setup page');
     const body = JSON.parse(global.fetch.mock.calls[0][1].body);
     expect(body.height).toBe(167.6); // 5.5 ft
     expect(body.weight).toBe(69.9);  // 154 lb

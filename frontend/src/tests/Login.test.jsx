@@ -4,6 +4,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import Login from '../pages/Login';
+import { getPendingLogin, clearPendingLogin } from '../lib/pendingLogin';
 
 function mockFetch(...responses) {
   global.fetch = jest.fn();
@@ -22,6 +23,7 @@ function renderLogin() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<p>Signed-in home</p>} />
+        <Route path="/two-factor/verify" element={<p>Two-factor verify page</p>} />
       </Routes>
     </MemoryRouter>
   );
@@ -35,6 +37,7 @@ function fillAndSubmit(email, password) {
 
 beforeEach(() => {
   localStorage.clear();
+  clearPendingLogin();
 });
 
 describe('Login', () => {
@@ -61,6 +64,17 @@ describe('Login', () => {
     const [url, options] = global.fetch.mock.calls[0];
     expect(url).toBe('/auth/login');
     expect(JSON.parse(options.body)).toEqual({ email: 'demo@example.com', password: 'demo1234' });
+  });
+
+  test('a user with two-factor login on is sent to the code screen, with no token yet', async () => {
+    mockFetch({ status: 401, body: { error: '2FA code required' } });
+    renderLogin();
+
+    fillAndSubmit('demo@example.com', 'demo1234');
+
+    expect(await screen.findByText('Two-factor verify page')).toBeTruthy();
+    expect(localStorage.getItem('token')).toBeNull();
+    expect(getPendingLogin()).toEqual({ email: 'demo@example.com', password: 'demo1234' });
   });
 
   test('empty fields show messages and nothing is sent', () => {

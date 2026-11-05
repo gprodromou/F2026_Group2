@@ -11,6 +11,8 @@ import Landing from './pages/Landing';     // Andreas, week 1
 import NotFound from './pages/NotFound';   // Andreas, week 1
 import Register from './pages/Register';
 import Login from './pages/Login';
+import TwoFactorSetup from './pages/TwoFactorSetup';
+import TwoFactorVerify from './pages/TwoFactorVerify';
 
 export const routes = [
   {
@@ -26,6 +28,8 @@ export const routes = [
     children: [
       { path: '/register', element: <Register /> },
       { path: '/login', element: <Login /> },
+      { path: '/two-factor/setup', element: <TwoFactorSetup /> },   // after signing up
+      { path: '/two-factor/verify', element: <TwoFactorVerify /> },  // after each login
     ],
   },
 ];

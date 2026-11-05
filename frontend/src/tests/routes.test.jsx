@@ -28,6 +28,17 @@ describe('app shell', () => {
     expect(screen.getByRole('heading', { name: headingName })).toBeTruthy();
   });
 
+  test('the two-factor screens send a visitor without a login back to the login page', () => {
+    renderAt('/two-factor/verify');
+    expect(screen.getByRole('heading', { name: /^login$/i })).toBeTruthy();
+  });
+
+  test('the two-factor setup screen sends a visitor without a token to the login page', () => {
+    localStorage.clear();
+    renderAt('/two-factor/setup');
+    expect(screen.getByRole('heading', { name: /^login$/i })).toBeTruthy();
+  });
+
   test('the landing page is wrapped in the main frame with navigation and footer', () => {
     renderAt('/');
     expect(screen.getByRole('navigation', { name: 'Main navigation' })).toBeTruthy();

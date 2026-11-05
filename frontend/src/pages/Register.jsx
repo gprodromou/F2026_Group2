@@ -4,7 +4,8 @@
 // Everything is kept in one place (state), so pressing Back loses nothing.
 // Only when "Complete" is pressed is ONE request sent to POST /auth/register
 // (Marius's endpoint expects all fields in a single call):
-//   201 { userId }   account created -> log in with the same details, save the token
+//   201 { userId }   account created -> log in with the same details, save the token,
+//                    then go to the two-factor setup screen (UC14)
 //   400 { error }    something missing
 //   409 { error }    email already registered (RQ02) -> back to step 1, error at the email
 // Checks before sending use lib/validate.js; the inputs and buttons come from
@@ -17,7 +18,7 @@ import { validateForm, registerRules, required } from '../lib/validate';
 import { saveToken } from '../lib/token';
 import './Auth.css';
 
-const SIGNED_IN_PATH = '/'; // change when the signed-in page has its own route
+const SETUP_PATH = '/two-factor/setup'; // new accounts set up two-factor login first
 
 const INITIAL_VALUES = {
   name: '',
@@ -178,7 +179,7 @@ export default function Register() {
 
       const { token } = await loginResponse.json();
       saveToken(token);
-      navigate(SIGNED_IN_PATH);
+      navigate(SETUP_PATH);
     } catch {
       setFormError('We cannot reach the server. Check your connection and try again.');
     } finally {

@@ -2,6 +2,7 @@
 // Sends the email and password to POST /auth/login (Marius's endpoint):
 //   200 { token }   correct details -> save the token, go to the signed-in page
 //   401 { error }   wrong email or password
+//   401 '2FA code required'  this user has two-factor login on -> go to the code screen
 //
 // The detail that matters: when the login fails, the error appears next to the
 // form and NOTHING the user typed is cleared. We never reset the fields.
@@ -11,9 +12,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button, Input, FormError } from '../components/ui';
 import { validateForm, loginRules } from '../lib/validate';
 import { saveToken } from '../lib/token';
+import { setPendingLogin } from '../lib/pendingLogin';
 import './Auth.css';
 
 const SIGNED_IN_PATH = '/'; // change when the signed-in page has its own route
+const VERIFY_PATH = '/two-factor/verify';
+const TWO_FACTOR_REQUIRED = '2FA code required'; // the message Marius's login sends
 
 export default function Login() {
   const navigate = useNavigate();
@@ -46,6 +50,13 @@ export default function Login() {
 
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
+        if (response.status === 401 && data.error === TWO_FACTOR_REQUIRED) {
+          // Right email and password, but a code is needed. Keep the details in memory
+          // only (never in storage) so the code screen can send them again with the code.
+          setPendingLogin({ email: values.email.trim(), password: values.password });
+          navigate(VERIFY_PATH);
+          return;
+        }
         setFormError(data.error || 'We could not log you in. Try again.');
         return; // email and password stay exactly as typed
       }

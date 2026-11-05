@@ -1,0 +1,93 @@
+/* Styles shared by the Login and Register pages. Tokens only. */
+
+.auth-card {
+  width: 100%;
+  max-width: 28rem;
+  align-self: flex-start;
+  background: var(--color-bg-card-login);
+  border: var(--border-width) solid var(--color-border-card-login);
+  border-radius: var(--card-radius);
+  padding: var(--card-padding);
+  color: var(--color-text);
+}
+
+.auth-title {
+  margin: 0 0 var(--space-4);
+  text-align: center;
+  font-size: var(--font-size-2xl);
+  font-style: italic;
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-tight);
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.auth-actions {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+}
+
+.auth-footer {
+  margin: var(--space-4) 0 0;
+  text-align: center;
+  font-size: var(--font-size-sm);
+}
+
+.auth-link { color: var(--color-link); }
+.auth-link:hover { color: var(--color-link-hover); }
+
+/* ---------- Register step 2 (Statistics) ---------- */
+.stat-group {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-4);
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--color-grey-300-80);
+}
+
+.stat-group__title {
+  padding: 0;
+  font-size: var(--font-size-lg);
+  font-style: italic;
+}
+
+.stat-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.stat-row .field {
+  flex: 1;
+  min-width: 5rem;
+}
+
+.stat-unit {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.stat-unit__label { font-size: var(--input-label-size); }
+
+.stat-unit__select {
+  font-family: inherit;
+  font-size: var(--font-size-md);
+  color: var(--input-text);
+  background: var(--input-bg);
+  border: var(--border-width-thin) solid var(--input-border);
+  border-radius: var(--input-radius);
+  padding: var(--input-padding-y) var(--input-padding-x);
+}
+.stat-unit__select:focus {
+  outline: none;
+  background: var(--input-bg-focus);
+  border-color: var(--input-border-focus);
+  box-shadow: var(--shadow-focus);
+}

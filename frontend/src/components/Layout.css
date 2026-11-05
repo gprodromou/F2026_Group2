@@ -1,0 +1,73 @@
+.layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--gradient-page);
+  color: var(--color-text);
+  font-family: var(--font-family-base);
+}
+
+.layout__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  min-height: var(--header-height);
+  padding: 0 var(--space-6);
+  background: var(--color-bg-header);
+}
+
+.layout__logo {
+  font-family: var(--font-family-logo);
+  font-style: var(--font-style-logo);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-logo);
+  line-height: var(--line-height-tight);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.layout__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--nav-gap);
+}
+
+.nav-link {
+  color: var(--nav-link-color);
+  text-decoration: none;
+  font-size: var(--font-size-md);
+}
+.nav-link:hover { color: var(--nav-link-color-hover); }
+.nav-link.active { color: var(--nav-link-color-active); font-weight: var(--font-weight-bold); }
+
+/* Sign up (outline) and Sign in (filled) in the header */
+.nav-button {
+  padding: var(--btn-padding-y) var(--btn-padding-x);
+  border: var(--border-width-thin) solid var(--btn-secondary-border);
+  border-radius: var(--btn-radius);
+  font-size: var(--btn-font-size);
+  text-decoration: none;
+}
+.nav-button--secondary { background: var(--btn-secondary-bg); color: var(--btn-secondary-text); }
+.nav-button--secondary:hover { background: var(--btn-secondary-bg-hover); }
+.nav-button--secondary:active { background: var(--btn-secondary-bg-active); }
+.nav-button--primary { background: var(--btn-primary-bg); border-color: var(--btn-primary-bg); color: var(--btn-primary-text); }
+.nav-button--primary:hover { background: var(--btn-primary-bg-hover); border-color: var(--btn-primary-bg-hover); }
+.nav-button--primary:active { background: var(--btn-primary-bg-active); border-color: var(--btn-primary-bg-active); }
+
+.nav-link:focus-visible,
+.nav-button:focus-visible,
+.layout__logo:focus-visible {
+  box-shadow: var(--shadow-focus);
+  outline: none;
+}
+
+.layout__main {
+  flex: 1;
+  width: 100%;
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4);
+}

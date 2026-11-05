@@ -41,6 +41,9 @@ app.get('/health', (req, res) => {
 // The register and login routes (routes/auth.js), at /auth/register and /auth/login.
 app.use('/auth', require('./routes/auth'));
 
+// The 2FA routes (routes/twofactor.js), at /auth/2fa/setup and /auth/2fa/enable.
+app.use('/auth/2fa', require('./routes/twofactor'));
+
 // The login guard (middleware/auth.js).
 const { requireAuth } = require('./middleware/auth');
 

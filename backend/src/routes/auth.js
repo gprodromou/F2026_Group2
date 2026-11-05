@@ -12,6 +12,8 @@ const express = require('express');
 const users = require('../db/users');
 const password = require('../auth/password');
 const jwt = require('../auth/jwt');
+// otplib: the library that checks the 6-digit 2FA codes.
+const { authenticator } = require('otplib');
 
 const router = express.Router();
 
@@ -69,7 +71,20 @@ router.post('/login', async (req, res) => {
     return res.status(401).json({ error: 'Wrong email or password' });
   }
 
-  // 4. Everything is correct: give back a token.
+  // 4. 2FA check (UC14): if this user has 2FA on (totp_enabled is 1),
+  //    they must also send the 6-digit code from their phone app.
+  if (user.totp_enabled === 1) {
+    // No code sent -> refuse with 401.
+    if (!body.code) {
+      return res.status(401).json({ error: '2FA code required' });
+    }
+    // Wrong code -> refuse with 401.
+    if (!authenticator.check(String(body.code), user.totp_secret)) {
+      return res.status(401).json({ error: 'Wrong 2FA code' });
+    }
+  }
+
+  // 5. Everything is correct: give back a token.
   const token = jwt.createToken(user);
   res.status(200).json({ token: token });
 });

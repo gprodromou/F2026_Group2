@@ -11,7 +11,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button, Input, FormError } from '../components/ui';
 import { validateForm, loginRules } from '../lib/validate';
-import { saveToken } from '../lib/token';
+import { useAuth } from '../state/AuthContext';
 import { setPendingLogin } from '../lib/pendingLogin';
 import './Auth.css';
 
@@ -21,6 +21,7 @@ const TWO_FACTOR_REQUIRED = '2FA code required'; // the message Marius's login s
 
 export default function Login() {
   const navigate = useNavigate();
+  const { signIn } = useAuth(); // saves the token AND tells the whole app we are signed in
   const [values, setValues] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState('');
@@ -62,7 +63,7 @@ export default function Login() {
       }
 
       const { token } = await response.json();
-      saveToken(token);
+      signIn(token);
       navigate(SIGNED_IN_PATH);
     } catch {
       setFormError('We cannot reach the server. Check your connection and try again.');

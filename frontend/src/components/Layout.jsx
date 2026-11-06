@@ -4,9 +4,13 @@
 
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import SiteFooter from './SiteFooter';
+import LogoutButton from './LogoutButton';
+import { useAuth } from '../state/AuthContext';
 import './Layout.css';
 
 export default function Layout() {
+  const { isSignedIn } = useAuth();
+
   return (
     <div className="layout">
       <header className="layout__header">
@@ -18,12 +22,18 @@ export default function Layout() {
           <NavLink to="/" end className="nav-link">
             Home
           </NavLink>
-          <NavLink to="/register" className="nav-button nav-button--secondary">
-            Sign up
-          </NavLink>
-          <NavLink to="/login" className="nav-button nav-button--primary">
-            Sign in
-          </NavLink>
+          {isSignedIn ? (
+            <LogoutButton />
+          ) : (
+            <>
+              <NavLink to="/register" className="nav-button nav-button--secondary">
+                Sign up
+              </NavLink>
+              <NavLink to="/login" className="nav-button nav-button--primary">
+                Sign in
+              </NavLink>
+            </>
+          )}
         </nav>
       </header>
 

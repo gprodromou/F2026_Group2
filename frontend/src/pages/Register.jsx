@@ -15,7 +15,7 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button, Input, FormError } from '../components/ui';
 import { validateForm, registerRules, required } from '../lib/validate';
-import { saveToken } from '../lib/token';
+import { useAuth } from '../state/AuthContext';
 import './Auth.css';
 
 const SETUP_PATH = '/two-factor/setup'; // new accounts set up two-factor login first
@@ -92,6 +92,7 @@ const toKilograms = (value, unit) => round1(unit === 'lb' ? Number(value) * 0.45
 
 export default function Register() {
   const navigate = useNavigate();
+  const { signIn } = useAuth(); // saves the token AND tells the whole app we are signed in
   const location = useLocation();
   const [step, setStep] = useState(1);
   const [values, setValues] = useState(INITIAL_VALUES);
@@ -178,7 +179,7 @@ export default function Register() {
       }
 
       const { token } = await loginResponse.json();
-      saveToken(token);
+      signIn(token);
       navigate(SETUP_PATH);
     } catch {
       setFormError('We cannot reach the server. Check your connection and try again.');

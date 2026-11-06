@@ -10,7 +10,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { Button, Input, FormError } from '../components/ui';
 import { validateForm } from '../lib/validate';
 import { getPendingLogin, clearPendingLogin } from '../lib/pendingLogin';
-import { saveToken } from '../lib/token';
+import { useAuth } from '../state/AuthContext';
 import './Auth.css';
 
 const SIGNED_IN_PATH = '/'; // change when the dashboard has its own route
@@ -22,6 +22,7 @@ const codeRules = {
 
 export default function TwoFactorVerify() {
   const navigate = useNavigate();
+  const { signIn } = useAuth(); // saves the token AND tells the whole app we are signed in
   const [code, setCode] = useState('');
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState('');
@@ -58,7 +59,7 @@ export default function TwoFactorVerify() {
       }
 
       const { token } = await response.json();
-      saveToken(token);
+      signIn(token);
       clearPendingLogin();
       navigate(SIGNED_IN_PATH);
     } catch {

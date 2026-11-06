@@ -1,16 +1,14 @@
 // Layout.jsx: the main frame (Landing, NotFound).
 //   header (logo + navigation)  ->  content area  ->  footer
 // <Outlet /> is the hole where React Router puts the page for the current URL.
+// The navigation itself (three states: signed out, signed in, admin) is in Nav.jsx.
 
-import { Link, NavLink, Outlet } from 'react-router-dom';
+import { Link, Outlet } from 'react-router-dom';
+import Nav from './Nav';
 import SiteFooter from './SiteFooter';
-import LogoutButton from './LogoutButton';
-import { useAuth } from '../state/AuthContext';
 import './Layout.css';
 
 export default function Layout() {
-  const { isSignedIn } = useAuth();
-
   return (
     <div className="layout">
       <header className="layout__header">
@@ -18,23 +16,7 @@ export default function Layout() {
           fit4you
         </Link>
 
-        <nav className="layout__nav" aria-label="Main navigation">
-          <NavLink to="/" end className="nav-link">
-            Home
-          </NavLink>
-          {isSignedIn ? (
-            <LogoutButton />
-          ) : (
-            <>
-              <NavLink to="/register" className="nav-button nav-button--secondary">
-                Sign up
-              </NavLink>
-              <NavLink to="/login" className="nav-button nav-button--primary">
-                Sign in
-              </NavLink>
-            </>
-          )}
-        </nav>
+        <Nav />
       </header>
 
       <div className="layout__main">

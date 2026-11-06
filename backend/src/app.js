@@ -56,6 +56,11 @@ app.get('/me', requireAuth, (req, res) => {
   res.json({ user: req.user });
 });
 
+// The admin routes for exercise plan templates (routes/admin.exercisePlans.js).
+// requireAuth reads the token, then requireRole('admin') refuses anyone who is not an admin (403).
+const { requireRole } = require('./middleware/role');
+app.use('/admin/exercise-plans', requireAuth, requireRole('admin'), require('./routes/admin.exercisePlans'));
+
 // Error handling (middleware/errors.js).
 // These two lines MUST stay after all the routes: Express checks everything from top to bottom,
 // so it only reaches these when no route above answered (notFound) or something broke (errorHandler).

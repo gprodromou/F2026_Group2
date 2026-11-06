@@ -1,4 +1,3 @@
-
 // templates.js: functions that read and change the two template tables
 
 const db = require('./connection');
@@ -20,6 +19,13 @@ function listExerciseTemplates() {
   const sql = 'SELECT * FROM exercise_templates';
   const statement = db.prepare(sql);
   return statement.all();
+}
+
+// SELECT ... WHERE=read ONE row. .get() gives back one row, or undefined if there is none.
+function getExerciseTemplate(id) {
+  const sql = 'SELECT * FROM exercise_templates WHERE exercise_template_id = ?';
+  const statement = db.prepare(sql);
+  return statement.get(id);
 }
 
 // UPDATE=change an existing row
@@ -75,6 +81,7 @@ function deleteGoalTemplate(id) {
 module.exports = {
   addExerciseTemplate,
   listExerciseTemplates,
+  getExerciseTemplate,
   updateExerciseTemplate,
   deleteExerciseTemplate,
   addGoalTemplate,

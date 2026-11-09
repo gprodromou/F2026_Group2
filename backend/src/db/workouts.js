@@ -29,5 +29,28 @@ function listWorkouts(userId) {
     .all(userId);
 }
 
-// Share both functions, so the workout routes can use them.
-module.exports = { createWorkout, listWorkouts };
+// ---------- Week 4 (Marius) ----------
+
+// Get ONE workout. Only works if it is this user's workout.
+function getWorkout(workoutId, userId) {
+  return db.prepare('SELECT * FROM workouts WHERE workout_id = ? AND user_id = ?').get(workoutId, userId);
+}
+
+// Edit a workout. Gives back 1 if it worked, 0 if not found.
+function updateWorkout(workoutId, userId, workout) {
+  const result = db
+    .prepare(
+      'UPDATE workouts SET workout_date = ?, exercise_type = ?, duration = ?, calories_burned = ?, equipment_used = ? WHERE workout_id = ? AND user_id = ?'
+    )
+    .run(workout.workoutDate, workout.exerciseType, workout.duration, workout.caloriesBurned, workout.equipmentUsed, workoutId, userId);
+  return result.changes;
+}
+
+// Delete a workout. Gives back 1 if it worked, 0 if not found.
+function deleteWorkout(workoutId, userId) {
+  const result = db.prepare('DELETE FROM workouts WHERE workout_id = ? AND user_id = ?').run(workoutId, userId);
+  return result.changes;
+}
+
+// Share all the functions with the routes.
+module.exports = { createWorkout, listWorkouts, getWorkout, updateWorkout, deleteWorkout };

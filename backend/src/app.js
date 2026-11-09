@@ -61,6 +61,10 @@ app.get('/me', requireAuth, (req, res) => {
 const { requireRole } = require('./middleware/role');
 app.use('/admin/exercise-plans', requireAuth, requireRole('admin'), require('./routes/admin.exercisePlans'));
 
+// The workout routes (routes/workouts.js), at /workouts.
+// requireAuth runs first, so only logged-in users can use them (401 without a token).
+app.use('/workouts', requireAuth, require('./routes/workouts'));
+
 // Error handling (middleware/errors.js).
 // These two lines MUST stay after all the routes: Express checks everything from top to bottom,
 // so it only reaches these when no route above answered (notFound) or something broke (errorHandler).

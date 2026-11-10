@@ -1,0 +1,23 @@
+/* FilterBar.css: lays out the three filters in one row, wrapping on a narrow screen.
+   Only tokens from tokens.css, no loose sizes or colours. */
+.filter-bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.filter-bar__fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
+.filter-bar__fields > .field {
+  flex: 1 1 10rem;
+}
+
+/* lines the button up with the inputs, above the space kept for field errors */
+.filter-bar__actions {
+  padding-bottom: calc(var(--font-size-sm) * var(--line-height-base) + var(--space-1));
+}

@@ -5,13 +5,16 @@
 // 2. The user scans it and types the first 6-digit code from the app.
 // 3. We check it with POST /auth/2fa/enable { code } -> 200 turns 2FA on, 400 wrong code.
 //    A right first code proves the scan worked, so the user cannot lock themselves out.
+// Both requests go through the API client (api/client.js, Bogdan C, week 4), which attaches
+// the token and, if the server answers 401, signs the user out and opens the login page.
 
 import { useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import { Button, Input, FormError } from '../components/ui';
 import { validateForm } from '../lib/validate';
-import { getToken, clearToken } from '../lib/token';
+import { getToken } from '../lib/token';
+import { useApi } from '../api/client';
 import './Auth.css';
 
 const SIGNED_IN_PATH = '/'; // change when the dashboard has its own route
@@ -22,6 +25,7 @@ const codeRules = {
 
 export default function TwoFactorSetup() {
   const navigate = useNavigate();
+  const api = useApi();
   const token = getToken();
   const [setup, setSetup] = useState(null); // { secret, otpauthUrl }
   const [loadError, setLoadError] = useState('');
@@ -35,22 +39,14 @@ export default function TwoFactorSetup() {
     if (!token || started.current) return;
     started.current = true;
 
-    fetch('/auth/2fa/setup', { method: 'POST', headers: { Authorization: `Bearer ${token}` } })
-      .then(async (response) => {
-        const data = await response.json().catch(() => ({}));
-        if (response.status === 401) {
-          clearToken(); // the token is no longer valid
-          navigate('/login');
-          return;
-        }
-        if (!response.ok) {
-          setLoadError(data.error || 'We could not start the two-factor setup. Try again.');
-          return;
-        }
-        setSetup({ secret: data.secret, otpauthUrl: data.otpauthUrl });
-      })
-      .catch(() => setLoadError('We cannot reach the server. Check your connection and try again.'));
-  }, [token, navigate]);
+    api
+      .post('/auth/2fa/setup')
+      .then((data) => setSetup({ secret: data.secret, otpauthUrl: data.otpauthUrl }))
+      .catch((error) => {
+        if (error.status === 401) return; // the client has already sent the user to the login page
+        setLoadError(error.message);
+      });
+  }, [token, api]);
 
   // Not logged in: there is no token to ask for a secret with.
   if (!token) return <Navigate to="/login" replace />;
@@ -66,21 +62,10 @@ export default function TwoFactorSetup() {
 
     setSubmitting(true);
     try {
-      const response = await fetch('/auth/2fa/enable', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ code: code.trim() }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        setFormError(data.error || 'We could not turn on two-factor login. Try again.');
-        return; // the code stays as typed
-      }
-
+      await api.post('/auth/2fa/enable', { code: code.trim() });
       navigate(SIGNED_IN_PATH);
-    } catch {
-      setFormError('We cannot reach the server. Check your connection and try again.');
+    } catch (error) {
+      if (error.status !== 401) setFormError(error.message); // the code stays as typed
     } finally {
       setSubmitting(false);
     }

@@ -1,0 +1,112 @@
+/* WorkoutNew.css: layout of the workout entry screen. Tokens only (tokens.css). */
+
+.workout-page {
+  width: 100%;
+  font-family: var(--font-family-base);
+  color: var(--color-text);
+}
+
+.workout-page__title {
+  margin: 0 0 var(--space-5);
+  text-align: center;
+  font-size: var(--font-size-2xl);
+  font-style: italic;
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+}
+
+/* The big pink card */
+.workout-card {
+  background: var(--color-bg-card-login);
+  border: var(--border-width) solid var(--color-border-card-login);
+  border-radius: var(--card-radius);
+  padding: var(--card-padding);
+}
+
+/* "Stats" heading, centred */
+.workout-card__title {
+  margin: 0 0 var(--space-5);
+  text-align: center;
+  font-size: var(--font-size-2xl);
+  font-style: italic;
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-tight);
+}
+
+.workout-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-5);
+}
+
+.workout-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.workout-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+/* The grey rounded panels */
+.workout-panel {
+  min-width: 0;
+  margin: 0;
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-grey-300-80);
+  box-shadow: 0 var(--space-1) var(--space-3) color-mix(in srgb, var(--color-ink) 30%, transparent);
+}
+
+.workout-panel__title {
+  margin: 0 0 var(--space-2);
+  padding: 0;
+  font-size: var(--font-size-lg);
+  font-style: italic;
+  font-weight: var(--font-weight-regular);
+}
+
+.workout-inline {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.workout-inline .field {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Icon next to the dropdown (type and equipment) */
+.workout-choice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.workout-choice__icon {
+  font-size: var(--font-size-2xl);
+  line-height: 1;
+}
+
+.workout-choice__fields {
+  flex: 1;
+  min-width: 0;
+}
+
+.workout-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-5);
+}
+
+/* Narrow screens: one column */
+@media (max-width: 64rem) {
+  .workout-grid,
+  .workout-row {
+    grid-template-columns: 1fr;
+  }
+}

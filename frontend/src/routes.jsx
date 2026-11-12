@@ -13,12 +13,14 @@ import Register from './pages/Register';
 import Login from './pages/Login';
 import TwoFactorSetup from './pages/TwoFactorSetup';
 import TwoFactorVerify from './pages/TwoFactorVerify';
+import WorkoutNew from './pages/WorkoutNew';
 
 export const routes = [
   {
     element: <Layout />,
     children: [
       { path: '/', element: <Landing /> },
+      { path: '/workouts/new', element: <WorkoutNew /> },
       // Must stay last: any address that matches nothing shows NotFound.
       { path: '*', element: <NotFound /> },
     ],

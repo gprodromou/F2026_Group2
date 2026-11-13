@@ -61,6 +61,9 @@ app.get('/me', requireAuth, (req, res) => {
 const { requireRole } = require('./middleware/role');
 app.use('/admin/exercise-plans', requireAuth, requireRole('admin'), require('./routes/admin.exercisePlans'));
 
+// The admin routes for goal templates (routes/admin.goalTemplates.js), behind the same two guards.
+app.use('/admin/goal-templates', requireAuth, requireRole('admin'), require('./routes/admin.goalTemplates'));
+
 // The workout routes (routes/workouts.js), at /workouts.
 // requireAuth runs first, so only logged-in users can use them (401 without a token).
 app.use('/workouts', requireAuth, require('./routes/workouts'));

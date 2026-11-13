@@ -1,0 +1,211 @@
+/* WorkoutList.css: the history screen, sized for a web page. Tokens only (tokens.css).
+   The title, menu button and footer come from AppShell. */
+
+/* The big pink card, same as the workout entry screen */
+.history-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  box-sizing: border-box;
+  background: var(--color-bg-card-login);
+  border: var(--border-width) solid var(--color-border-card-login);
+  border-radius: var(--card-radius);
+  padding: var(--card-padding);
+}
+
+/* The grey rounded panels (filters, summary and each workout) */
+.history-panel {
+  min-width: 0;
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-6);
+  background: var(--color-grey-300-80);
+  box-shadow: 0 var(--space-1) var(--space-3) color-mix(in srgb, var(--color-ink) 30%, transparent);
+}
+
+.history-panel__title {
+  margin: 0 0 var(--space-3);
+  font-size: var(--font-size-lg);
+  font-style: italic;
+  font-weight: var(--font-weight-regular);
+}
+
+/* ---------- summary: tiles on the left, bar chart on the right ---------- */
+
+.history-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+}
+
+.history-summary__tiles {
+  flex: 1 1 18rem;
+  min-width: 0;
+}
+
+.history-summary__chart {
+  flex: 2 1 24rem;
+  min-width: 0;
+}
+
+.history-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.history-tile {
+  display: flex;
+  flex: 1 1 7rem;
+  flex-direction: column;
+  min-width: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--color-white) 55%, transparent);
+}
+
+.history-tile__label {
+  font-size: var(--font-size-sm);
+  font-style: italic;
+}
+
+.history-tile__value {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-base);
+  overflow-wrap: anywhere;
+}
+
+.history-bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.history-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 12rem) minmax(0, 1fr) 5rem;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--font-size-sm);
+}
+
+.history-bar__label { overflow-wrap: anywhere; }
+
+.history-bar__track {
+  display: block;
+  height: var(--space-5);
+  border-radius: var(--space-3);
+  background: color-mix(in srgb, var(--color-ink) 12%, transparent);
+}
+
+.history-bar__fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--space-3);
+  background: var(--color-pink-700);
+}
+
+.history-bar__value {
+  font-weight: var(--font-weight-bold);
+  text-align: right;
+}
+
+/* ---------- list ---------- */
+
+.history-count {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-style: italic;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.history-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.history-item__main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.history-item__type {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  overflow-wrap: anywhere;
+}
+
+.history-item__date { font-style: italic; }
+
+.history-item__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.history-item__stats dt {
+  font-size: var(--font-size-sm);
+  font-style: italic;
+}
+
+.history-item__stats dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.history-message {
+  margin: 0;
+  text-align: center;
+  font-style: italic;
+}
+
+.history-message p { margin: 0 0 var(--space-3); }
+
+.history-actions {
+  display: flex;
+  justify-content: center;
+}
+
+/* Link styled as the primary button (darker pink so the white text is readable) */
+.history-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--space-7);
+  padding: 0 var(--space-6);
+  border-radius: var(--btn-radius);
+  background: var(--color-pink-600);
+  color: var(--btn-primary-text);
+  text-decoration: none;
+}
+.history-button:hover { background: var(--color-pink-700); }
+.history-button:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+
+/* Smaller screens */
+@media (max-width: 64rem) {
+  .history-bar { grid-template-columns: minmax(0, 9rem) minmax(0, 1fr) 4.5rem; }
+}
+
+@media (max-width: 40rem) {
+  .history-card { padding: var(--space-4); }
+  .history-panel { padding: var(--space-4); }
+  .history-item,
+  .history-item__stats { grid-template-columns: 1fr; }
+  .history-bar { grid-template-columns: 1fr 4.5rem; }
+  .history-bar__label { grid-column: 1 / -1; }
+  .history-bar__track { grid-column: 1; }
+}

@@ -14,11 +14,12 @@ import LogoutButton from './LogoutButton';
 import { useAuth } from '../state/AuthContext';
 
 const SIGNED_OUT_LINKS = [{ to: '/', label: 'Home', end: true }];
-const SIGNED_IN_LINKS = [
+export const SIGNED_IN_LINKS = [
   { to: '/', label: 'Home', end: true },
   { to: '/workouts/new', label: 'Log workout' },
+  { to: '/workouts', label: 'History', end: true },
 ];
-const ADMIN_LINKS = [{ to: '/admin', label: 'Admin' }]; // shown to administrators only
+export const ADMIN_LINKS = [{ to: '/admin', label: 'Admin' }]; // shown to administrators only
 
 export default function Nav() {
   const { user, isSignedIn } = useAuth();

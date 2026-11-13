@@ -62,6 +62,13 @@ function listGoalTemplates() {
   return statement.all();
 }
 
+// SELECT ... WHERE=read ONE row. .get() gives back one row, or undefined if there is none.
+function getGoalTemplate(id) {
+  const sql = 'SELECT * FROM goal_templates WHERE goal_template_id = ?';
+  const statement = db.prepare(sql);
+  return statement.get(id);
+}
+
 function updateGoalTemplate(id, templateName, goalType, description) {
   const sql =
     'UPDATE goal_templates SET template_name = ?, goal_type = ?, description = ? WHERE goal_template_id = ?';
@@ -86,6 +93,7 @@ module.exports = {
   deleteExerciseTemplate,
   addGoalTemplate,
   listGoalTemplates,
+  getGoalTemplate,
   updateGoalTemplate,
   deleteGoalTemplate,
 };

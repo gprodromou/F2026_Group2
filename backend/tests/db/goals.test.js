@@ -51,8 +51,8 @@ test('GET /goals returns only my goals, each with its status for today', async (
   const res = await request(app).get('/goals').set('Authorization', `Bearer ${token}`);
 
   expect(res.status).toBe(200);                                                         // 200 = success.
-  expect(res.body.goals.every((g) => g.user_id === anna)).toBe(true);                   // Every goal that came back is Anna's, so Ben's goal was left out.
-  expect(res.body.goals.map((g) => g.status).sort()).toEqual(['completed', 'expired']); // Take each goal's status and sort them, so the order of the goals doesn't matter.
+  expect(res.body.every((g) => g.user_id === anna)).toBe(true);                   // Every goal that came back is Anna's, so Ben's goal was left out.
+  expect(res.body.map((g) => g.status).sort()).toEqual(['completed', 'expired']); // Take each goal's status and sort them, so the order of the goals doesn't matter.
 });
 
 // Test 2 (RQ13): progress adds up the workouts, and percentage stops at 100.

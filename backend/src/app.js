@@ -68,15 +68,10 @@ app.use('/admin/goal-templates', requireAuth, requireRole('admin'), require('./r
 // requireAuth runs first, so only logged-in users can use them (401 without a token).
 app.use('/workouts', requireAuth, require('./routes/workouts'));
 
-// The goal queries (db/goals.js).
-const { listGoals } = require('./db/goals');
+// The goal routes (routes/goals.js), at /goals.
+// requireAuth runs first, so only logged-in users can use them (401 without a token).
+app.use('/goals', requireAuth, require('./routes/goals'));
 
-// GET /goals lets the logged-in user see all their goals, each with today's status (RQ11).
-// requireAuth runs first and we pass the id from the token, so a user only sees their own goals (NFR03).
-// Temporary route: we will delete it when Marius adds his goals route (app.use('/goals', ...)), otherwise his GET /goals won't run.
-app.get('/goals', requireAuth, (req, res) => {
-  res.json({ goals: listGoals(req.user.user_id) });
-});
 
 // Error handling (middleware/errors.js).
 // These two lines MUST stay after all the routes: Express checks everything from top to bottom,

@@ -3,11 +3,13 @@
 //   - the main frame (navigation) wraps Landing and NotFound
 //   - Login and Register use the simpler frame without navigation
 //   - an unknown address shows the not-found page instead of a blank screen
+//   - /workouts shows the workout history (week 5)
 // MemoryRouter lets the test "open" an address without a real browser.
 
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import AppRoutes from '../routes';
+import { AuthProvider } from '../state/AuthContext';
 
 function renderAt(path) {
   return render(
@@ -15,6 +17,15 @@ function renderAt(path) {
       <AppRoutes />
     </MemoryRouter>
   );
+}
+
+// Same fake login token as WorkoutList.test.jsx: AuthContext reads the
+// user id, role and expiry out of the token, so it must look like a real JWT.
+function makeToken() {
+  const encode = (obj) =>
+    btoa(JSON.stringify(obj)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  const payload = { user_id: 7, role: 'user', exp: Math.floor(Date.now() / 1000) + 3600 };
+  return `${encode({ alg: 'HS256', typ: 'JWT' })}.${encode(payload)}.fake-signature`;
 }
 
 describe('app shell', () => {
@@ -54,5 +65,39 @@ describe('app shell', () => {
     renderAt('/login');
     expect(screen.queryByRole('navigation', { name: 'Main navigation' })).toBeNull();
     expect(screen.getByText(/all rights reserved/i)).toBeTruthy();
+  });
+
+  // Week 5: WorkoutList was built in week 4 but never routed, so /workouts
+  // fell through to the catch-all and showed "Page not found".
+  test('the address /workouts shows the workout history, not the not-found page', async () => {
+    // WorkoutList asks the API for workouts when it opens. There is no server
+    // in Jest, so fetch is replaced with a fake that answers "no workouts yet".
+    const realFetch = global.fetch;
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => [],
+    });
+    // Signed in: a token AuthContext accepts, and the real AuthProvider around
+    // the app, the same way WorkoutList.test.jsx does it.
+    localStorage.setItem('token', makeToken());
+
+    try {
+      render(
+        <MemoryRouter initialEntries={['/workouts']}>
+          <AuthProvider>
+            <AppRoutes />
+          </AuthProvider>
+        </MemoryRouter>
+      );
+
+      // findBy waits for the page to finish loading; getBy would check too early.
+      expect(await screen.findByRole('heading', { name: 'Workout History' })).toBeTruthy();
+      expect(screen.queryByRole('heading', { name: /^page not found$/i })).toBeNull();
+    } finally {
+      // Put things back even if the test fails, so other tests are not affected.
+      global.fetch = realFetch;
+      localStorage.clear();
+    }
   });
 });

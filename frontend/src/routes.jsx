@@ -1,6 +1,6 @@
 // routes.jsx: the router. It maps every URL to the page that shows it.
 // Two frames (layouts) are used:
-//   Layout      - header with navigation + footer (Landing, NotFound)
+//   Layout      - header with navigation + footer (Landing, workouts, NotFound)
 //   AuthLayout  - centred logo + footer, no navigation (Login, Register)
 // To add a page later: import it and add one line to the right group.
 
@@ -14,12 +14,14 @@ import Login from './pages/Login';
 import TwoFactorSetup from './pages/TwoFactorSetup';
 import TwoFactorVerify from './pages/TwoFactorVerify';
 import WorkoutNew from './pages/WorkoutNew';
+import WorkoutList from './pages/WorkoutList';   
 
 export const routes = [
   {
     element: <Layout />,
     children: [
       { path: '/', element: <Landing /> },
+      { path: '/workouts', element: <WorkoutList /> },       // history (RQ07)
       { path: '/workouts/new', element: <WorkoutNew /> },
       // Must stay last: any address that matches nothing shows NotFound.
       { path: '*', element: <NotFound /> },

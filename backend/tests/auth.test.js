@@ -56,3 +56,11 @@ test('login: an email that is not registered is refused with 401', async () => {
   const res = await request(app).post('/auth/login').send({ email: 'nobody@example.com', password: 'secret123' });
   expect(res.statusCode).toBe(401);
 });
+
+// The same email with capital letters is also refused (RQ02).
+test('register: the same email with capital letters is refused with 409', async () => {
+  const res = await request(app)
+    .post('/auth/register')
+    .send({ name: 'Test User', email: 'TEST@Example.com', password: 'secret123' });
+  expect(res.statusCode).toBe(409);
+});

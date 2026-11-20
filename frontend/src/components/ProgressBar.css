@@ -1,0 +1,43 @@
+/* ProgressBar.css: the track, the fill and the percentage next to it.
+   Only tokens from tokens.css, no loose colours. */
+.progress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.progress__track {
+  flex: 1;
+  height: var(--space-3);
+  background: var(--color-bg-input);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.progress__fill {
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: var(--radius-md);
+  transition: width 0.3s ease;
+}
+
+.progress--completed .progress__fill {
+  background: var(--color-green-500);
+}
+
+.progress--expired .progress__fill {
+  background: var(--color-grey-400);
+}
+
+.progress__value {
+  min-width: 3ch;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress__fill {
+    transition: none;
+  }
+}

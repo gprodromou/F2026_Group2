@@ -68,6 +68,11 @@ app.use('/admin/goal-templates', requireAuth, requireRole('admin'), require('./r
 // requireAuth runs first, so only logged-in users can use them (401 without a token).
 app.use('/workouts', requireAuth, require('./routes/workouts'));
 
+// The goal routes (routes/goals.js), at /goals.
+// requireAuth runs first, so only logged-in users can use them (401 without a token).
+app.use('/goals', requireAuth, require('./routes/goals'));
+
+
 // Error handling (middleware/errors.js).
 // These two lines MUST stay after all the routes: Express checks everything from top to bottom,
 // so it only reaches these when no route above answered (notFound) or something broke (errorHandler).

@@ -1,14 +1,17 @@
 // workoutFilter.js: the filter that FilterBar reports, and the helpers that use it (RQ07).
 //
 // A filter is always this shape. An empty string means "not chosen":
-//   { from: '2026-11-01', to: '2026-11-30', type: 'Running' }
+//   { from: '2026-11-01', to: '2026-11-30', type: 'Cardiovascular' }
 // Dates are 'YYYY-MM-DD', the same format as the workout_date column in the database,
 // so they can be compared as plain text.
 
+import { WORKOUT_TYPE_NAMES } from './workoutTypes';
+
 export const NO_FILTER = Object.freeze({ from: '', to: '', type: '' });
 
-// The workout types the dropdown offers. Keep this the same list as the workout entry form.
-export const WORKOUT_TYPES = ['Running', 'Cycling', 'Swimming', 'Walking', 'Strength', 'Yoga'];
+// The workout types the dropdown offers by default: the SAME list as the workout entry form
+// (Yanna's lib/workoutTypes.js), so there is only one list to keep up to date. (week 5)
+export const WORKOUT_TYPES = WORKOUT_TYPE_NAMES;
 
 // true when nothing is chosen.
 export function isEmptyFilter(filter) {

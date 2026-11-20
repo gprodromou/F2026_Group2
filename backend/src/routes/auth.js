@@ -28,6 +28,9 @@ router.post('/register', async (req, res) => {
   }
 
   // 2. The email must not be used already (RQ02).
+  // Emails are not case-sensitive: X@Mail.com and x@mail.com are the same address (RQ02).
+  // So we always save and compare them in small letters, without spaces.
+  body.email = body.email.trim().toLowerCase();
   const existingUser = users.findUserByEmail(body.email);
   if (existingUser) {
     return res.status(409).json({ error: 'This email is already registered' });
@@ -60,6 +63,9 @@ router.post('/login', async (req, res) => {
   }
 
   // 2. Find the user with this email.
+  // Emails are not case-sensitive: X@Mail.com and x@mail.com are the same address (RQ02).
+  // So we always save and compare them in small letters, without spaces.
+  body.email = body.email.trim().toLowerCase();
   const user = users.findUserByEmail(body.email);
   if (!user) {
     return res.status(401).json({ error: 'Wrong email or password' });

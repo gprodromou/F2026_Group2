@@ -12,6 +12,7 @@ import FilterBar from '../components/FilterBar';
 import { NO_FILTER, filterToQuery, applyFilter, isEmptyFilter } from '../lib/workoutFilter';
 import { listWorkouts } from '../api/workouts';
 import { useApi } from '../api/client';
+import { WORKOUT_TYPE_NAMES } from '../lib/workoutTypes';
 
 const setField = (label, value) =>
   fireEvent.change(screen.getByLabelText(label), { target: { value } });
@@ -27,23 +28,29 @@ describe('FilterBar', () => {
     expect(clearButton()).toBeDisabled();
   });
 
+  test('by default offers the same workout types as the entry form (lib/workoutTypes.js)', () => {
+    render(<FilterBar onChange={jest.fn()} />);
+    const options = within(screen.getByLabelText('Workout type')).getAllByRole('option');
+    expect(options.map((o) => o.textContent)).toEqual(['All types', ...WORKOUT_TYPE_NAMES]);
+  });
+
   test('reports the chosen date range and workout type', () => {
     const onChange = jest.fn();
     render(<FilterBar onChange={onChange} />);
 
     setField('From', '2026-11-01');
     setField('To', '2026-11-30');
-    setField('Workout type', 'Running');
+    setField('Workout type', 'Cardiovascular');
 
     expect(onChange).toHaveBeenCalledTimes(3);
-    expect(onChange).toHaveBeenLastCalledWith({ from: '2026-11-01', to: '2026-11-30', type: 'Running' });
+    expect(onChange).toHaveBeenLastCalledWith({ from: '2026-11-01', to: '2026-11-30', type: 'Cardiovascular' });
   });
 
   test('Clear empties every filter and reports no filter', () => {
     const onChange = jest.fn();
     render(<FilterBar onChange={onChange} />);
     setField('From', '2026-11-01');
-    setField('Workout type', 'Cycling');
+    setField('Workout type', 'HIIT');
 
     fireEvent.click(clearButton());
 
@@ -71,23 +78,23 @@ describe('FilterBar', () => {
   });
 
   test('offers "All types" plus the types it is given', () => {
-    render(<FilterBar onChange={jest.fn()} types={['Running', 'Rowing']} />);
+    render(<FilterBar onChange={jest.fn()} types={['Cardiovascular', 'Rowing']} />);
 
     const options = within(screen.getByLabelText('Workout type')).getAllByRole('option');
-    expect(options.map((o) => o.textContent)).toEqual(['All types', 'Running', 'Rowing']);
+    expect(options.map((o) => o.textContent)).toEqual(['All types', 'Cardiovascular', 'Rowing']);
   });
 });
 
 const ROWS = [
-  { workout_id: 3, workout_date: '2026-11-20', exercise_type: 'Running', duration: 30 },
-  { workout_id: 2, workout_date: '2026-11-05', exercise_type: 'cycling', duration: 60 },
-  { workout_id: 1, workout_date: '2026-10-12', exercise_type: 'Running', duration: 25 },
+  { workout_id: 3, workout_date: '2026-11-20', exercise_type: 'Cardiovascular', duration: 30 },
+  { workout_id: 2, workout_date: '2026-11-05', exercise_type: 'hiit', duration: 60 },
+  { workout_id: 1, workout_date: '2026-10-12', exercise_type: 'Cardiovascular', duration: 25 },
 ];
 
 describe('workoutFilter helpers', () => {
   test('filterToQuery sends only the dates that are chosen', () => {
     expect(filterToQuery(NO_FILTER)).toBe('');
-    expect(filterToQuery({ from: '2026-11-01', to: '', type: 'Running' })).toBe('?from=2026-11-01');
+    expect(filterToQuery({ from: '2026-11-01', to: '', type: 'Cardiovascular' })).toBe('?from=2026-11-01');
     expect(filterToQuery({ from: '2026-11-01', to: '2026-11-30', type: '' })).toBe(
       '?from=2026-11-01&to=2026-11-30'
     );
@@ -98,8 +105,8 @@ describe('workoutFilter helpers', () => {
     const ids = (filter) => applyFilter(ROWS, filter).map((w) => w.workout_id);
     expect(ids({ from: '2026-11-05', to: '2026-11-20', type: '' })).toEqual([3, 2]);
     expect(ids({ from: '2026-11-06', to: '', type: '' })).toEqual([3]);
-    expect(ids({ from: '', to: '', type: 'Running' })).toEqual([3, 1]);
-    expect(ids({ from: '', to: '', type: 'Cycling' })).toEqual([2]); // capital letters do not matter
+    expect(ids({ from: '', to: '', type: 'Cardiovascular' })).toEqual([3, 1]);
+    expect(ids({ from: '', to: '', type: 'HIIT' })).toEqual([2]); // capital letters do not matter
     expect(ids({ from: '2026-12-01', to: '', type: '' })).toEqual([]);
   });
 
@@ -152,10 +159,10 @@ describe('FilterBar wired to the workout list', () => {
     expect(await screen.findAllByRole('listitem')).toHaveLength(3);
 
     setField('From', '2026-11-01');
-    setField('Workout type', 'Running');
+    setField('Workout type', 'Cardiovascular');
 
     await waitFor(() => expect(screen.getAllByRole('listitem')).toHaveLength(1));
-    expect(screen.getByText('2026-11-20 Running')).toBeTruthy();
+    expect(screen.getByText('2026-11-20 Cardiovascular')).toBeTruthy();
 
     const [url, options] = global.fetch.mock.calls.at(-1);
     expect(url).toBe('/workouts?from=2026-11-01');

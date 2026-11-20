@@ -7,6 +7,7 @@
 import { useRoutes } from 'react-router-dom';
 import Layout from './components/Layout';
 import AuthLayout from './components/AuthLayout';
+import RequireAdmin from './components/RequireAdmin';
 import Landing from './pages/Landing';     // Andreas, week 1
 import NotFound from './pages/NotFound';   // Andreas, week 1
 import Register from './pages/Register';
@@ -14,6 +15,7 @@ import Login from './pages/Login';
 import TwoFactorSetup from './pages/TwoFactorSetup';
 import TwoFactorVerify from './pages/TwoFactorVerify';
 import WorkoutNew from './pages/WorkoutNew';
+import TemplateList from './pages/admin/TemplateList'; // Andreas, week 5
 
 export const routes = [
   {
@@ -21,6 +23,8 @@ export const routes = [
     children: [
       { path: '/', element: <Landing /> },
       { path: '/workouts/new', element: <WorkoutNew /> },
+      // Admin only: RequireAdmin sends everyone else away.
+      { path: '/admin/templates', element: <RequireAdmin><TemplateList /></RequireAdmin> },
       // Must stay last: any address that matches nothing shows NotFound.
       { path: '*', element: <NotFound /> },
     ],

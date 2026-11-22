@@ -8,6 +8,13 @@
 const app = require('./app');
 const config = require('./config');
 
+// Without JWT_SECRET nobody can log in (every login would answer 500), so refuse to start and say why.
+// The check is here and not in config.js, because migrate and seed also load config.js and don't need the secret.
+if (!config.jwtSecret) {
+  console.error('JWT_SECRET is missing. Copy .env.example to .env and set JWT_SECRET (see README).');
+  process.exit(1);
+}
+
 // Start listening for requests on the port from the settings.
 // The program keeps running and waiting for requests until you stop it manually with Ctrl+C.
 // The function inside runs once, when the server is ready.

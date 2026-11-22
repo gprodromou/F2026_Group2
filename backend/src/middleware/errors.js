@@ -11,6 +11,11 @@ function notFound(req, res) {
 // this function runs when something breaks inside any route (for example the database fails).
 // Express knows this is the error handler because it has 4 parameters, and the error (err) comes first.
 function errorHandler(err, req, res, next) {
+  // Broken JSON from the client (express.json could not read it) is the client's mistake, so 400, not 500.
+  if (err.type === 'entity.parse.failed') {
+    return res.status(400).json({ error: 'The data sent is not valid JSON' });
+  }
+
   // Print the full error in our terminal, so we can see what went wrong and fix it.
   console.error(err);
 

@@ -49,3 +49,23 @@ test('database connection has foreign keys switched on', () => {
   // { simple: true } returns just the number: 1 means on, 0 means off.
   expect(db.pragma('foreign_keys', { simple: true })).toBe(1);
 });
+
+// Test 4 (NFR11): broken JSON from the client gets an error 400 ("your mistake"), not a 500 ("server error").
+test('broken JSON in a request body answers 400', async () => {
+  // '{"email": ' is cut off halfway, so express.json cannot read it.
+  const res = await request(app).post('/auth/login').set('Content-Type', 'application/json').send('{"email": ');
+  expect(res.statusCode).toBe(400);
+});
+
+// Test 5 (NFR11): the server refuses to start without JWT_SECRET, instead of failing every login later.
+// spawnSync runs the real server.js as a separate program, with an empty secret, and waits for it to stop.
+test('server.js stops at once when JWT_SECRET is missing', () => {
+  const { spawnSync } = require('child_process');
+  const path = require('path');
+  const run = spawnSync('node', [path.join(__dirname, '..', 'src', 'server.js')], {
+    env: { ...process.env, JWT_SECRET: '', PORT: '0' },
+    timeout: 5000,
+  });
+  // Exit code 1 means it stopped on purpose. Without the check it would keep running until the 5 second timeout.
+  expect(run.status).toBe(1);
+});

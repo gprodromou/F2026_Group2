@@ -11,7 +11,7 @@ const { createToken } = require('../../src/auth/jwt');  // createToken makes a l
 const workouts = require('../../src/db/workouts');      // The workout queries, to add workouts the goals can count.
 const goals = require('../../src/db/goals');            // The file we are testing (goals.js).
 
-// Anna has two 300-calorie workouts in November and two goals. Ben has one goal.
+// Anna has one old workout from October, two 300-calorie workouts today, and two goals. Ben has one goal.
 let anna;
 let ben;
 let calorieGoal;
@@ -27,14 +27,16 @@ beforeAll(() => {
   anna = addUser.run('Anna', 'anna@example.com', 'not-a-real-hash').lastInsertRowid;
   ben = addUser.run('Ben', 'ben@example.com', 'not-a-real-hash').lastInsertRowid;
 
-  // Two workouts for Anna, 300 calories each, so 600 in total.
-  workouts.createWorkout(anna, { workoutDate: '2026-11-02', exerciseType: 'Running', duration: 30, caloriesBurned: 300, equipmentUsed: null });
-  workouts.createWorkout(anna, { workoutDate: '2026-11-09', exerciseType: 'Cycling', duration: 60, caloriesBurned: 300, equipmentUsed: 'Bike' });
+  // The October workout is before the goals were set, so it must not count. The other two are today.
+  const today = new Date().toISOString().slice(0, 10);
+  workouts.createWorkout(anna, { workoutDate: '2026-10-01', exerciseType: 'Running', duration: 30, caloriesBurned: 300, equipmentUsed: null });
+  workouts.createWorkout(anna, { workoutDate: today, exerciseType: 'Running', duration: 30, caloriesBurned: 300, equipmentUsed: null });
+  workouts.createWorkout(anna, { workoutDate: today, exerciseType: 'Cycling', duration: 60, caloriesBurned: 300, equipmentUsed: 'Bike' });
 
-  // Reached: 600 calories against a target of 500, deadline far in the future.
+  // Reached: 600 calories from today's two workouts against a target of 500, deadline far in the future.
   // We keep its goal_id in calorieGoal for tests 2 and 3.
   calorieGoal = goals.createGoal(anna, { goalType: 'calories', targetValue: 500, targetDate: '2099-12-31' });
-  // Missed: 5 workouts by 31 Jan 2026, and both workouts came after that date.
+  // Missed: 5 workouts by 31 Jan 2026, and none of the workouts fall between today and that date.
   goals.createGoal(anna, { goalType: 'workouts', targetValue: 5, targetDate: '2026-01-31' });
 
   // Ben's goal sits in the same table, so we can check Anna never gets it.

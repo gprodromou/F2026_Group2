@@ -27,7 +27,7 @@ beforeAll(async () => {
   annaToken = await loginAs('Anna', 'anna@example.com');
   benToken = await loginAs('Ben', 'ben@example.com');
 
-  const workout = { workoutDate: '2026-11-09', exerciseType: 'Running', duration: 30, caloriesBurned: 300 };
+  const workout = { workoutDate: new Date().toISOString().slice(0, 10), exerciseType: 'Running', duration: 30, caloriesBurned: 300 };
   await request(app).post('/workouts').set('Authorization', 'Bearer ' + annaToken).send(workout);
   await request(app).post('/workouts').set('Authorization', 'Bearer ' + annaToken).send(workout);
 });

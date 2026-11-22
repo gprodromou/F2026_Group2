@@ -9,7 +9,7 @@ const db = require('./connection');
 // Function to monitor the progress of a user's goal.
 // RQ13 (calculate and display goal progress based on stored workouts) + RQ11 (allow users to view the status of each goal).
 function progressOf(goal) {
-  // Add up this user's workouts in a total from the start up to the goal's target date.
+  // Add up this user's workouts in a total from the day the goal was set up to its target date.
   // One query gives all three totals at once: calories, minutes and number of workouts.
   // COALESCE(..., 0) turns "no workouts" (NULL) into 0.
   const totals = db
@@ -17,9 +17,9 @@ function progressOf(goal) {
       `SELECT COALESCE(SUM(calories_burned), 0) AS calories,
               COALESCE(SUM(duration), 0)        AS duration,
               COUNT(*)                          AS workouts
-       FROM workouts WHERE user_id = ? AND workout_date <= ?`
+              FROM workouts WHERE user_id = ? AND workout_date >= ? AND workout_date <= ?`
     )
-    .get(goal.user_id, goal.target_date);
+    .get(goal.user_id, goal.start_date || '0000-01-01', goal.target_date);
 
   // Pick the total that matches the goal type ('calories', 'duration' or 'workouts').
   // A goal type we don't know counts as 0 instead of crashing.
@@ -40,10 +40,11 @@ function progressOf(goal) {
 // Function to save a new goal for this user and return the goal_id SQLite gave it.
 // userId comes from the login token, never from the form.
 // status is left out: the table fills in 'active' by itself (DEFAULT 'active' in 001_schema.sql).
+// start_date is today, so only workouts from now on count towards the goal (RQ13).
 function createGoal(userId, goal) {
   const result = db
-    .prepare('INSERT INTO goals (user_id, goal_type, target_value, target_date) VALUES (?, ?, ?, ?)')
-    .run(userId, goal.goalType, goal.targetValue, goal.targetDate);
+    .prepare('INSERT INTO goals (user_id, goal_type, target_value, target_date, start_date) VALUES (?, ?, ?, ?, ?)')
+    .run(userId, goal.goalType, goal.targetValue, goal.targetDate, new Date().toISOString().slice(0, 10));
   return result.lastInsertRowid;
 }
 

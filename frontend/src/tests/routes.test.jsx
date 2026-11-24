@@ -4,10 +4,10 @@
 //   - Login and Register use the simpler frame without navigation
 //   - an unknown address shows the not-found page instead of a blank screen
 //   - /workouts shows the workout history (week 5)
-//   - /goals shows the goals screen (week 6)
+//   - /goals shows the goals screen in its own frame, without the top bar (week 6)
 // MemoryRouter lets the test "open" an address without a real browser.
 
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import AppRoutes from '../routes';
 import { AuthProvider } from '../state/AuthContext';
@@ -119,6 +119,12 @@ describe('app shell', () => {
 
       expect(await screen.findByRole('heading', { name: 'My Goals' })).toBeTruthy();
       expect(screen.queryByRole('heading', { name: /^page not found$/i })).toBeNull();
+      // No top bar from Layout: the links live only in the three-line menu, and there is one footer.
+      expect(screen.queryByRole('navigation', { name: 'Main navigation' })).toBeNull();
+      expect(screen.queryByRole('link', { name: 'History' })).toBeNull();
+      expect(screen.getAllByText(/all rights reserved/i)).toHaveLength(1);
+      fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
+      expect(screen.getByRole('link', { name: 'Goals' })).toBeTruthy();
     } finally {
       global.fetch = realFetch;
       localStorage.clear();

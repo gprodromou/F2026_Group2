@@ -1,5 +1,5 @@
 // routes.jsx: the router. It maps every URL to the page that shows it.
-// Two frames (layouts) are used:
+// Two frames (layouts) are used, plus Goals, which brings its own frame (AppShell):
 //   Layout      - header with navigation + footer (Landing, workouts, NotFound)
 //   AuthLayout  - centred logo + footer, no navigation (Login, Register)
 // To add a page later: import it and add one line to the right group.
@@ -20,13 +20,15 @@ import Goals from './pages/Goals';             // Bogdan C, week 6
 import TemplateList from './pages/admin/TemplateList'; // Andreas, week 5
 
 export const routes = [
+  // Goals has its own frame (AppShell: title, three-line menu, footer), as in Yanna's design,
+  // so it sits outside Layout: no top bar with links and no second footer.
+  { path: '/goals', element: <Goals /> },               // goals with progress (RQ11, UC07)
   {
     element: <Layout />,
     children: [
       { path: '/', element: <Landing /> },
       { path: '/workouts', element: <WorkoutList /> },       // history (RQ07)
       { path: '/workouts/new', element: <WorkoutNew /> },
-      { path: '/goals', element: <Goals /> },               // goals with progress (RQ11, UC07)
       // Admin only: RequireAdmin sends everyone else away.
       { path: '/admin/templates', element: <RequireAdmin><TemplateList /></RequireAdmin> },
       // Must stay last: any address that matches nothing shows NotFound.

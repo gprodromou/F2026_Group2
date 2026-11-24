@@ -10,6 +10,7 @@
 
 const express = require('express');
 const users = require('../db/users');
+const admins = require('../db/admins');
 const password = require('../auth/password');
 const jwt = require('../auth/jwt');
 // otplib: the library that checks the 6-digit 2FA codes.
@@ -66,9 +67,25 @@ router.post('/login', async (req, res) => {
   // Emails are not case-sensitive: X@Mail.com and x@mail.com are the same address (RQ02).
   // So we always save and compare them in small letters, without spaces.
   body.email = body.email.trim().toLowerCase();
-  const user = users.findUserByEmail(body.email);
+   const user = users.findUserByEmail(body.email);
+
+  // Not a user? Then maybe it is an admin (admins are in their own table).
   if (!user) {
-    return res.status(401).json({ error: 'Wrong email or password' });
+    const admin = admins.findAdminByEmail(body.email);
+    if (!admin) {
+      return res.status(401).json({ error: 'Wrong email or password' });
+    }
+
+    // Check the admin's password against the saved hash.
+    const adminCorrect = await password.checkPassword(body.password, admin.password_hash);
+    if (!adminCorrect) {
+      return res.status(401).json({ error: 'Wrong email or password' });
+    }
+
+    // Correct: give back a token with the role 'admin' (NFR02).
+    // The admin pages (requireRole('admin')) only let this kind of token in.
+    const adminToken = jwt.createToken({ user_id: admin.admin_id, role: 'admin' });
+    return res.status(200).json({ token: adminToken });
   }
 
   // 3. Check the password against the saved hash.

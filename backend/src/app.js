@@ -66,11 +66,12 @@ app.use('/admin/goal-templates', requireAuth, requireRole('admin'), require('./r
 
 // The workout routes (routes/workouts.js), at /workouts.
 // requireAuth runs first, so only logged-in users can use them (401 without a token).
-app.use('/workouts', requireAuth, require('./routes/workouts'));
+// requireRole('user') keeps admins out (403): workouts and goals belong to normal users (NFR02).
+app.use('/workouts', requireAuth, requireRole('user'), require('./routes/workouts'));
 
 // The goal routes (routes/goals.js), at /goals.
 // requireAuth runs first, so only logged-in users can use them (401 without a token).
-app.use('/goals', requireAuth, require('./routes/goals'));
+app.use('/goals', requireAuth, requireRole('user'), require('./routes/goals'));
 
 
 // Error handling (middleware/errors.js).

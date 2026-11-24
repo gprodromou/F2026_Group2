@@ -16,11 +16,14 @@ const users = require('../db/users');
 // Georgios's login guard: only lets the request in if it has a real token.
 const { requireAuth } = require('../middleware/auth');
 
+// Only normal users have 2FA (the users table), so admins get 403 here (NFR02).
+const { requireRole } = require('../middleware/role');
+
 const router = express.Router();
 
 // ---------- SETUP ----------
 // requireAuth runs first. If the token is fine, it puts the user's id in req.user.
-router.post('/setup', requireAuth, (req, res) => {
+router.post('/setup', requireAuth, requireRole('user'), (req, res) => {
   // 1. Find the logged-in user.
   const user = users.findUserById(req.user.user_id);
 
@@ -37,7 +40,7 @@ router.post('/setup', requireAuth, (req, res) => {
 });
 
 //  ENABLE
-router.post('/enable', requireAuth, (req, res) => {
+router.post('/enable', requireAuth, requireRole('user'), (req, res) => {
   // The data the user sent, for example { "code": "482913" }.
   const body = req.body || {};
 

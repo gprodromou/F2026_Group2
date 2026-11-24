@@ -10,17 +10,19 @@ function newDatabase() {
   return db;
 }
 
-test('the seed adds a user with workouts and a goal', () => {
+test('the seed adds a user, an admin, workouts and goals', () => {
   const db = newDatabase();
   seed(db);
 
   const users = db.prepare('SELECT COUNT(*) AS count FROM users').get().count;
   const workouts = db.prepare('SELECT COUNT(*) AS count FROM workouts').get().count;
   const goals = db.prepare('SELECT COUNT(*) AS count FROM goals').get().count;
+  const admins = db.prepare('SELECT COUNT(*) AS count FROM admins').get().count;
 
   expect(users).toBe(1);
-  expect(workouts).toBe(4);
-  expect(goals).toBe(1);
+  expect(admins).toBe(1);
+  expect(workouts).toBe(10);
+  expect(goals).toBe(3);
 });
 
 test('the password is saved as a hash, not as the real password', () => {

@@ -52,6 +52,7 @@ describe('Nav', () => {
     renderNav();
 
     expect(link('Home')).toBeTruthy();
+    expect(link('Goals')).toBeTruthy(); // week 6: the goals screen
     expect(button('Log out')).toBeTruthy();
     expect(link('Sign up')).toBeNull();
     expect(link('Sign in')).toBeNull();

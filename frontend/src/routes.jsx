@@ -15,7 +15,8 @@ import Login from './pages/Login';
 import TwoFactorSetup from './pages/TwoFactorSetup';
 import TwoFactorVerify from './pages/TwoFactorVerify';
 import WorkoutNew from './pages/WorkoutNew';
-import WorkoutList from './pages/WorkoutList';   
+import WorkoutList from './pages/WorkoutList';
+import Goals from './pages/Goals';             // Bogdan C, week 6
 import TemplateList from './pages/admin/TemplateList'; // Andreas, week 5
 
 export const routes = [
@@ -25,6 +26,7 @@ export const routes = [
       { path: '/', element: <Landing /> },
       { path: '/workouts', element: <WorkoutList /> },       // history (RQ07)
       { path: '/workouts/new', element: <WorkoutNew /> },
+      { path: '/goals', element: <Goals /> },               // goals with progress (RQ11, UC07)
       // Admin only: RequireAdmin sends everyone else away.
       { path: '/admin/templates', element: <RequireAdmin><TemplateList /></RequireAdmin> },
       // Must stay last: any address that matches nothing shows NotFound.

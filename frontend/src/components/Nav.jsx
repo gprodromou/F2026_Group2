@@ -1,6 +1,6 @@
 // Nav.jsx: the main navigation, with three states (NFR02, NFR05):
 //   signed out            -> Home, Sign up, Sign in
-//   signed in             -> Home, Log out
+//   signed in             -> Home, Log workout, History, Goals, Log out
 //   signed in as an admin -> Home, Admin, Log out
 // Who is looking comes from Bogdan C's context (state/AuthContext.jsx), through useAuth().
 // Log out is his LogoutButton, which forgets the token and returns to the login page.
@@ -18,6 +18,7 @@ export const SIGNED_IN_LINKS = [
   { to: '/', label: 'Home', end: true },
   { to: '/workouts/new', label: 'Log workout' },
   { to: '/workouts', label: 'History', end: true },
+  { to: '/goals', label: 'Goals' },
 ];
 export const ADMIN_LINKS = [{ to: '/admin', label: 'Admin' }]; // shown to administrators only
 

@@ -1,0 +1,36 @@
+/* Goals.css: the goals screen. Tokens only (tokens.css).
+   The title, menu button and footer come from AppShell; each card is GoalCard. */
+
+/* The big pink card, same frame as the history and workout entry screens */
+.goals-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  box-sizing: border-box;
+  background: var(--color-bg-card-login);
+  border: var(--border-width) solid var(--color-border-card-login);
+  border-radius: var(--card-radius);
+  padding: var(--card-padding);
+}
+
+/* The goal cards in a grid: as many columns as fit, at least about 18rem wide */
+.goals-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.goals-message {
+  margin: 0;
+  text-align: center;
+  font-style: italic;
+}
+
+/* Phones: one card per row, less padding */
+@media (max-width: 40rem) {
+  .goals-page { padding: var(--space-4); }
+  .goals-list { grid-template-columns: 1fr; }
+}

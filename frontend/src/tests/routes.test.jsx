@@ -4,6 +4,7 @@
 //   - Login and Register use the simpler frame without navigation
 //   - an unknown address shows the not-found page instead of a blank screen
 //   - /workouts shows the workout history (week 5)
+//   - /goals shows the goals screen (week 6)
 // MemoryRouter lets the test "open" an address without a real browser.
 
 import { render, screen } from '@testing-library/react';
@@ -96,6 +97,29 @@ describe('app shell', () => {
       expect(screen.queryByRole('heading', { name: /^page not found$/i })).toBeNull();
     } finally {
       // Put things back even if the test fails, so other tests are not affected.
+      global.fetch = realFetch;
+      localStorage.clear();
+    }
+  });
+
+  // Week 6: the goals screen, routed so /goals does not fall through to "Page not found".
+  test('the address /goals shows the goals screen, not the not-found page', async () => {
+    const realFetch = global.fetch;
+    global.fetch = jest.fn().mockResolvedValue({ ok: true, status: 200, json: async () => [] });
+    localStorage.setItem('token', makeToken());
+
+    try {
+      render(
+        <MemoryRouter initialEntries={['/goals']}>
+          <AuthProvider>
+            <AppRoutes />
+          </AuthProvider>
+        </MemoryRouter>
+      );
+
+      expect(await screen.findByRole('heading', { name: 'My Goals' })).toBeTruthy();
+      expect(screen.queryByRole('heading', { name: /^page not found$/i })).toBeNull();
+    } finally {
       global.fetch = realFetch;
       localStorage.clear();
     }

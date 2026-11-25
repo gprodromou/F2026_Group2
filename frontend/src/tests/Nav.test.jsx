@@ -114,6 +114,21 @@ describe('Nav inside the real app', () => {
     expect(link('Admin')).toBeTruthy();
   });
 
+  // Fix for the demo (week 7): Admin used to go to /admin, which showed "Page not found".
+  test('an admin clicking Admin lands on the templates screen', async () => {
+    // the templates screen loads its lists; an empty answer is enough here
+    global.fetch = jest.fn(async () => ({ ok: true, status: 200, json: async () => [] }));
+    localStorage.setItem('token', makeToken({ role: 'admin' }));
+    renderApp();
+    fireEvent.click(button('Open menu'));
+
+    expect(link('Admin').getAttribute('href')).toBe('/admin/templates');
+    fireEvent.click(link('Admin'));
+
+    expect(await screen.findByRole('heading', { name: 'Templates' })).toBeTruthy();
+    expect(screen.queryByText(/page not found/i)).toBeNull();
+  });
+
   test('a normal user does not see the Admin link in the menu of the landing page', () => {
     localStorage.setItem('token', makeToken({ role: 'user' }));
     renderApp();

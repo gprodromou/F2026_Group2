@@ -2,7 +2,7 @@
 //   signed out            -> Home, About, Services (menu), Contact us, Sign up, Sign in
 //   signed in             -> Home, Log Workout, History, Goals, Log out
 //                            (on the Landing page these sit in the three-line menu, SiteMenu.jsx)
-//   signed in as an admin -> Home, Admin, Log out
+//   signed in as an admin -> the signed-in links + Admin (opens /admin/templates), Log out
 // Who is looking comes from Bogdan C's context (state/AuthContext.jsx), through useAuth().
 // Log out is his LogoutButton, which forgets the token and returns to the login page.
 // To add a page to the navigation later, add one line to the right list below.
@@ -25,7 +25,9 @@ export const SIGNED_IN_LINKS = [
   { to: '/workouts', label: 'History', end: true },
   { to: '/goals', label: 'Goals' },
 ];
-export const ADMIN_LINKS = [{ to: '/admin', label: 'Admin' }]; // shown to administrators only
+// Admin opens Andreas's templates screen (week 5). It used to point at /admin, which has
+// no page and showed "Page not found" (fixed for the demo, week 7).
+export const ADMIN_LINKS = [{ to: '/admin/templates', label: 'Admin' }]; // shown to administrators only
 
 // The items under "Services": each scrolls to its card in the Services section.
 const SERVICES = [

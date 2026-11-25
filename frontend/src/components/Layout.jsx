@@ -1,5 +1,5 @@
 // Layout.jsx: the main frame (Landing, NotFound).
-//   header (logo + navigation)  ->  content area  ->  footer
+//   header (logo + slogan + navigation)  ->  content area  ->  footer
 // <Outlet /> is the hole where React Router puts the page for the current URL.
 // The navigation itself (three states: signed out, signed in, admin) is in Nav.jsx.
 
@@ -12,9 +12,12 @@ export default function Layout() {
   return (
     <div className="layout">
       <header className="layout__header">
-        <Link to="/" className="layout__logo">
-          fit4you
-        </Link>
+        <div className="layout__brand">
+          <Link to="/" className="layout__logo">
+            fit4you
+          </Link>
+          <span className="layout__slogan">your fitness, your way</span>
+        </div>
 
         <Nav />
       </header>

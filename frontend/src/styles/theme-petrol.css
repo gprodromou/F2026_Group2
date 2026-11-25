@@ -1,0 +1,74 @@
+/* ==========================================================================
+   theme-petrol.css: TRIAL colour scheme (Yanna, week 7)
+   Accent: bright petrol blue. Background: light grey. Cards: darker grey with petrol outlines.
+
+   How it works: App.jsx imports this file right AFTER tokens.css, so the values
+   below replace the ones in tokens.css. Everything else (layout, sizes, fonts)
+   still comes from tokens.css.
+
+   To go back to the original green + pink design: delete the line
+     import './styles/theme-petrol.css';
+   in App.jsx. Nothing else needs to change.
+
+   Why the old names (pink, green) are given new values instead of new names:
+   a few screens use those colours directly (WorkoutList, GoalCard, ProgressBar,
+   AppShell). Changing the values here recolours them too, without editing every
+   teammate's file. If the team keeps this scheme, rename them in tokens.css later.
+   ========================================================================== */
+
+:root {
+  /* ---------- new raw colours ---------- */
+  --color-petrol-50: #e6f4f6;
+  --color-petrol-100: #c9e6eb;
+  --color-petrol-200: #8fcbd5;
+  --color-petrol-500: #0a7486;   /* the accent: buttons, icons, active link, borders */
+  --color-petrol-600: #085e6d;   /* hover */
+  --color-petrol-700: #064855;   /* pressed, focus ring */
+
+  --color-grey-50: #eceef0;      /* page background, bottom */
+  --color-grey-100: #e2e5e8;     /* page background, top */
+  --color-grey-150: #d6dbdf;     /* header + footer */
+  --color-grey-200: #c2cacf;     /* input outlines */
+  --color-grey-250: #d0d6da;     /* feature cards: a step darker than the page */
+
+  /* ---------- old "pink" = accent, now petrol ---------- */
+  --color-pink-100: var(--color-petrol-100);
+  --color-pink-200: var(--color-petrol-200);
+  --color-pink-500: var(--color-petrol-500);
+  --color-pink-500-50: var(--color-petrol-100);  /* login card fill: a light tint, not 50% */
+  --color-pink-600: var(--color-petrol-600);
+  --color-pink-700: var(--color-petrol-700);
+
+  /* ---------- old "green" = surfaces, now grey / white ---------- */
+  --color-green-100: var(--color-grey-50);       /* soft hover backgrounds */
+  --color-green-300: var(--color-grey-150);      /* header + footer */
+  --color-green-400: var(--color-grey-250);      /* feature cards */
+  --color-green-400-80: var(--color-grey-250);
+  --color-green-500: var(--color-petrol-500);    /* progress bars, active dot */
+
+  /* ---------- semantic tweaks ---------- */
+  --gradient-page: linear-gradient(180deg, var(--color-grey-100) 0%, var(--color-grey-50) 100%);
+  --color-border-card: var(--color-petrol-200);  /* feature cards: light petrol outline */
+  --color-border-card-login: var(--color-petrol-500);
+  --color-link: var(--color-petrol-600);
+  --color-link-hover: var(--color-petrol-700);
+
+  --dot-color: var(--color-white);
+  --dot-color-active: var(--color-petrol-500);
+
+  --bubble-bg: var(--color-petrol-500);         /* solid petrol bubble, white text */
+  --bubble-text: var(--color-white);
+  --bubble-border-color: var(--color-petrol-500);
+
+  --menu-item-bg-hover: var(--color-petrol-50);
+
+  /* a petrol line over the footer (the header has only the line under the logo) */
+  --footer-border: var(--border-width) solid var(--color-petrol-500);
+  --footer-icon-color: var(--color-petrol-500);
+  --footer-icon-color-hover: var(--color-petrol-700);
+
+  /* inputs: a soft grey with a thin outline; they turn white while you type in them */
+  --color-grey-input: #e4e8eb;
+  --color-grey-300-80: var(--color-grey-input);
+  --input-border: var(--color-grey-200);
+}

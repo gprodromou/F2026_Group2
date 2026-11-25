@@ -1,15 +1,19 @@
 // Nav.jsx: the main navigation, with three states (NFR02, NFR05):
-//   signed out            -> Home, Sign up, Sign in
+//   signed out            -> Home, About, Services (menu), Contact us, Sign up, Sign in
 //   signed in             -> Home, Log workout, History, Goals, Log out
 //   signed in as an admin -> Home, Admin, Log out
 // Who is looking comes from Bogdan C's context (state/AuthContext.jsx), through useAuth().
 // Log out is his LogoutButton, which forgets the token and returns to the login page.
 // To add a page to the navigation later, add one line to the right list below.
 //
+// About, Services and Contact us (Yanna, week 7) are sections of the Landing page, so they
+// link to /#about, /#services and /#contact and Landing scrolls to them. They are plain
+// Links, not NavLinks: a NavLink to "/" would light up as "active" on the home page.
+//
 // Hiding a link only changes what is SHOWN. The real protection is on the server:
 // middleware/role.js refuses non-admins, so a hidden link was never the lock.
 
-import { NavLink } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import LogoutButton from './LogoutButton';
 import { useAuth } from '../state/AuthContext';
 
@@ -21,6 +25,36 @@ export const SIGNED_IN_LINKS = [
   { to: '/goals', label: 'Goals' },
 ];
 export const ADMIN_LINKS = [{ to: '/admin', label: 'Admin' }]; // shown to administrators only
+
+// The items under "Services": each scrolls to its card in the Services section.
+const SERVICES = [
+  { to: '/#service-workouts', label: 'Workout log' },
+  { to: '/#service-goals', label: 'Goals and progress' },
+  { to: '/#service-history', label: 'Workout history' },
+];
+
+// "Services" with a small menu that opens on hover or keyboard focus (CSS in Layout.css).
+function ServicesMenu() {
+  return (
+    <div className="nav-dropdown">
+      <Link to="/#services" className="nav-link nav-dropdown__toggle">
+        Services
+        <svg className="nav-dropdown__chevron" viewBox="0 0 12 12" aria-hidden="true">
+          <path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+      </Link>
+      <ul className="nav-dropdown__menu">
+        {SERVICES.map((item) => (
+          <li key={item.to}>
+            <Link to={item.to} className="nav-dropdown__item">
+              {item.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 export default function Nav() {
   const { user, isSignedIn } = useAuth();
@@ -43,6 +77,9 @@ export default function Nav() {
         <LogoutButton />
       ) : (
         <>
+          <Link to="/#about" className="nav-link">About</Link>
+          <ServicesMenu />
+          <Link to="/#contact" className="nav-link">Contact us</Link>
           <NavLink to="/register" className="nav-button nav-button--secondary">
             Sign up
           </NavLink>

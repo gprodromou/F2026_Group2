@@ -7,22 +7,20 @@
   font-family: var(--font-family-base);
 }
 
-.auth-layout__logo {
-  align-self: center;
-  margin-top: var(--space-5);
-  font-family: var(--font-family-logo);
-  font-style: var(--font-style-logo);
-  font-weight: var(--font-weight-bold);
-  font-size: var(--font-size-logo);
-  line-height: var(--line-height-tight);
-  color: var(--color-text);
-  text-decoration: none;
+/* logo on the left, menu button on the right (same height and padding as the main header) */
+.auth-layout__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: var(--header-height);
+  padding: 0 var(--space-6);
 }
-.auth-layout__logo:focus-visible { box-shadow: var(--shadow-focus); outline: none; }
 
 .auth-layout__main {
   flex: 1;
   display: flex;
   justify-content: center;
-  padding: var(--space-5) var(--space-4) var(--space-6);
+  align-items: flex-start;
+  padding: var(--space-2) var(--space-4) var(--space-5);
 }

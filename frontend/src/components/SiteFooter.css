@@ -7,6 +7,7 @@
   min-height: var(--footer-height);
   padding: 0 var(--space-6);
   background: var(--color-bg-footer);
+  border-top: var(--footer-border);
   color: var(--color-text);
   font-family: var(--font-family-base);
 }
@@ -20,4 +21,30 @@
 .site-footer__text {
   margin: 0;
   font-size: var(--font-size-sm);
+}
+
+/* The paler footer of the signed-in app screens (AppShell, tone="light") */
+.site-footer--light { background: var(--color-green-100); }
+
+/* Social icons on the right. Without these rules the <ul> showed only its bullet dots
+   and the SVGs had no size, so the icons were invisible. */
+.site-footer__social {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site-footer__icon {
+  display: inline-flex;
+  color: var(--footer-icon-color);
+}
+.site-footer__icon:hover { color: var(--footer-icon-color-hover); }
+.site-footer__icon:focus-visible { outline: none; box-shadow: var(--shadow-focus); border-radius: var(--radius-sm); }
+
+.site-footer__icon svg {
+  width: var(--footer-icon-size);
+  height: var(--footer-icon-size);
 }

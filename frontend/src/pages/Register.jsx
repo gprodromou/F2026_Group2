@@ -1,7 +1,8 @@
 // Register.jsx: the registration screen (RQ01, UC01). Two steps, as designed:
 //   Step 1 "Register":   full name, email, password, confirm password
 //   Step 2 "Statistics": height, weight, birthday
-// Everything is kept in one place (state), so pressing Back loses nothing.
+// Everything is kept in one place (state). There is no Back button (Yanna, week 7): an email
+// that is already registered sends the user back to step 1 automatically, with the error.
 // Only when "Complete" is pressed is ONE request sent to POST /auth/register
 // (Marius's endpoint expects all fields in a single call):
 //   201 { userId }   account created -> log in with the same details, save the token,
@@ -12,7 +13,7 @@
 // Bogdan C's UI kit (components/ui).
 
 import { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button, Input, FormError } from '../components/ui';
 import { validateForm, registerRules, required } from '../lib/validate';
 import { useAuth } from '../state/AuthContext';
@@ -37,6 +38,10 @@ const INITIAL_VALUES = {
 };
 
 // ---------- checks before sending ----------
+// The one password rule (same 8 as registerRules.password in lib/validate.js).
+// It is shown under the password box and ticks itself once it is met.
+const PASSWORD_MIN = 8;
+
 const STEP1_RULES = {
   name: registerRules.name,
   email: registerRules.email,
@@ -46,8 +51,50 @@ const STEP1_RULES = {
     (value !== all.password ? 'The passwords do not match' : null),
 };
 
+// ---------- birthday: Day / Month / Year dropdowns, plus a calendar ----------
+export const MIN_AGE = 16;   // you must be at least 16 to register
+const MAX_AGE = 100;         // how far back the year list goes
+export const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+const pad = (n) => String(n).padStart(2, '0');
+const isoDate = (date) => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+
+// The latest birthday allowed today (exactly MIN_AGE years ago) and the earliest one.
+function birthdayLimits(today = new Date()) {
+  const latest = new Date(today.getFullYear() - MIN_AGE, today.getMonth(), today.getDate());
+  const earliest = new Date(today.getFullYear() - MAX_AGE, 0, 1);
+  return { latest, earliest };
+}
+
+// Years from the newest allowed (16 years ago) back to 100 years ago.
+function birthYears() {
+  const { latest, earliest } = birthdayLimits();
+  const years = [];
+  for (let y = latest.getFullYear(); y >= earliest.getFullYear(); y -= 1) years.push(y);
+  return years;
+}
+
+// How many days the chosen month has (31 until a month is picked; 29 for February
+// until a year is picked, so the 29th is not lost too early).
+function daysInMonth(year, month) {
+  if (!month) return 31;
+  return new Date(Number(year) || 2000, Number(month), 0).getDate();
+}
+
+// The date is real and in the past (validate.js), and the person is at least 16.
+function birthdayRule(value) {
+  const problem = registerRules.dateOfBirth(value);
+  if (problem) return problem;
+  return value > isoDate(birthdayLimits().latest)
+    ? `You must be at least ${MIN_AGE} to register`
+    : null;
+}
+
 const STEP2_RULES = {
-  dateOfBirth: registerRules.dateOfBirth,
+  dateOfBirth: birthdayRule,
   height: registerRules.height,
   weight: registerRules.weight,
 };
@@ -76,10 +123,16 @@ function buildDate(year, month, day) {
   return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
 }
 
+// Height in cm is a whole number, so its decimal box is hidden; m and ft have one.
+// Weight (kg and lb) always has a decimal box. Leaving a decimal box empty is fine.
+export const HEIGHT_UNITS_WITH_DECIMAL = ['m', 'ft'];
+const heightHasDecimal = (unit) => HEIGHT_UNITS_WITH_DECIMAL.includes(unit);
+
 // The values the step 2 rules look at.
 function statsValues(v) {
   return {
-    height: combine(v.heightWhole, v.heightDecimal),
+    // a decimal typed earlier is ignored once the unit is switched to cm
+    height: combine(v.heightWhole, heightHasDecimal(v.heightUnit) ? v.heightDecimal : ''),
     weight: combine(v.weightWhole, v.weightDecimal),
     dateOfBirth: buildDate(v.birthYear, v.birthMonth, v.birthDay),
   };
@@ -87,13 +140,44 @@ function statsValues(v) {
 
 // The server stores one number per measurement: height in cm, weight in kg.
 const round1 = (n) => Math.round(n * 10) / 10;
-const toCentimetres = (value, unit) => round1(unit === 'ft' ? Number(value) * 30.48 : Number(value));
+const CM_PER_UNIT = { cm: 1, m: 100, ft: 30.48 };
+const toCentimetres = (value, unit) => round1(Number(value) * (CM_PER_UNIT[unit] || 1));
 const toKilograms = (value, unit) => round1(unit === 'lb' ? Number(value) * 0.45359237 : Number(value));
+
+// The calendar: a real <input type="date"> laid invisibly over a calendar icon, so a click
+// anywhere on the icon opens the browser's own date picker (showPicker() where supported).
+// It can only pick dates from 100 years ago up to 16 years ago.
+function CalendarButton({ values, onChange }) {
+  const { latest, earliest } = birthdayLimits();
+  const { birthYear: y, birthMonth: m, birthDay: d } = values;
+  const current = y && m && d ? `${y}-${pad(m)}-${pad(d)}` : '';
+
+  return (
+    <span className="stat-calendar">
+      <svg className="stat-calendar__icon" viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" fill="none" stroke="currentColor" strokeWidth="1.8" />
+        <path d="M3.5 10h17M8 3v4M16 3v4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <rect x="7" y="13" width="3" height="3" rx="0.6" fill="currentColor" />
+      </svg>
+      <input
+        type="date"
+        className="stat-calendar__input"
+        aria-label="Choose from a calendar"
+        min={isoDate(earliest)}
+        max={isoDate(latest)}
+        value={current}
+        onChange={onChange}
+        onClick={(event) => {
+          try { event.currentTarget.showPicker?.(); } catch { /* older browsers open it themselves */ }
+        }}
+      />
+    </span>
+  );
+}
 
 export default function Register() {
   const navigate = useNavigate();
   const { signIn } = useAuth(); // saves the token AND tells the whole app we are signed in
-  const location = useLocation();
   const [step, setStep] = useState(1);
   const [values, setValues] = useState(INITIAL_VALUES);
   const [errors, setErrors] = useState({});
@@ -102,20 +186,27 @@ export default function Register() {
 
   function handleChange(event) {
     const { name, value } = event.target;
-    setValues((current) => ({ ...current, [name]: value }));
+    setValues((current) => {
+      const next = { ...current, [name]: value };
+      // A new month or year can make the chosen day impossible (31 -> February): clear it.
+      if ((name === 'birthMonth' || name === 'birthYear') &&
+          Number(next.birthDay) > daysInMonth(next.birthYear, next.birthMonth)) {
+        next.birthDay = '';
+      }
+      return next;
+    });
   }
 
-  // Back on step 1 goes to the previous page; on step 2 it goes back to step 1.
-  function handleBack() {
-    if (step === 2) {
-      setErrors({});
-      setFormError('');
-      setStep(1);
-    } else if (location.key === 'default') {
-      navigate('/'); // opened directly, so there is no previous page
-    } else {
-      navigate(-1);
-    }
+  // The calendar gives "YYYY-MM-DD"; split it into the three dropdowns.
+  function handleCalendar(event) {
+    const [y, m, d] = event.target.value.split('-');
+    if (!y || !m || !d) return;
+    setValues((current) => ({
+      ...current,
+      birthYear: String(Number(y)),
+      birthMonth: String(Number(m)),
+      birthDay: String(Number(d)),
+    }));
   }
 
   async function handleSubmit(event) {
@@ -195,30 +286,41 @@ export default function Register() {
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
         {step === 1 ? (
           <>
-            <Input id="name" name="name" label="Full name" autoComplete="name"
+            <Input id="name" name="name" required label="Full name" autoComplete="name"
               value={values.name} onChange={handleChange} error={errors.name} />
-            <Input id="email" name="email" type="email" label="Email address" autoComplete="email"
+            <Input id="email" name="email" required type="email" label="Email address" autoComplete="email"
               value={values.email} onChange={handleChange} error={errors.email} />
-            <Input id="password" name="password" type="password" label="Password" autoComplete="new-password"
+            <Input id="password" name="password" required type="password" label="Password" autoComplete="new-password"
+              hint={`At least ${PASSWORD_MIN} characters`} hintMet={values.password.length >= PASSWORD_MIN}
               value={values.password} onChange={handleChange} error={errors.password} />
-            <Input id="confirmPassword" name="confirmPassword" type="password" label="Confirm password"
+            <Input id="confirmPassword" name="confirmPassword" required type="password" label="Confirm password"
               autoComplete="new-password"
               value={values.confirmPassword} onChange={handleChange} error={errors.confirmPassword} />
           </>
         ) : (
           <>
+            {/* Each box keeps its full label for screen readers and tests ("Height (whole)"),
+                but the label is hidden on screen: the group title says what it is, and a dot
+                between the two boxes shows that they make one number. */}
             <fieldset className="stat-group">
-              <legend className="stat-group__title">Height</legend>
-              <div className="stat-row">
+              <legend className="stat-group__title stat-group__title--required">Height</legend>
+              {/* cm has no decimal box: the one box then sits in the middle, same size as the others */}
+              <div className={`stat-row stat-row--measure${heightHasDecimal(values.heightUnit) ? '' : ' stat-row--no-decimal'}`}>
                 <Input id="heightWhole" name="heightWhole" type="number" min="0" label="Height (whole)"
-                  value={values.heightWhole} onChange={handleChange} />
-                <Input id="heightDecimal" name="heightDecimal" type="text" inputMode="numeric"
-                  label="Height (decimal)" value={values.heightDecimal} onChange={handleChange} />
+                  hideLabel value={values.heightWhole} onChange={handleChange} />
+                {heightHasDecimal(values.heightUnit) && (
+                  <>
+                    <span className="stat-dot" aria-hidden="true">.</span>
+                    <Input id="heightDecimal" name="heightDecimal" type="number" min="0" max="99" label="Height (decimal)" hideLabel
+                      value={values.heightDecimal} onChange={handleChange} />
+                  </>
+                )}
                 <div className="stat-unit">
-                  <label className="stat-unit__label" htmlFor="heightUnit">Height units</label>
+                  <label className="field__label field__label--hidden" htmlFor="heightUnit">Height units</label>
                   <select id="heightUnit" name="heightUnit" className="stat-unit__select"
                     value={values.heightUnit} onChange={handleChange}>
                     <option value="cm">cm</option>
+                    <option value="m">m</option>
                     <option value="ft">ft</option>
                   </select>
                 </div>
@@ -227,14 +329,15 @@ export default function Register() {
             </fieldset>
 
             <fieldset className="stat-group">
-              <legend className="stat-group__title">Weight</legend>
-              <div className="stat-row">
+              <legend className="stat-group__title stat-group__title--required">Weight</legend>
+              <div className="stat-row stat-row--measure">
                 <Input id="weightWhole" name="weightWhole" type="number" min="0" label="Weight (whole)"
-                  value={values.weightWhole} onChange={handleChange} />
-                <Input id="weightDecimal" name="weightDecimal" type="text" inputMode="numeric"
-                  label="Weight (decimal)" value={values.weightDecimal} onChange={handleChange} />
+                  hideLabel value={values.weightWhole} onChange={handleChange} />
+                <span className="stat-dot" aria-hidden="true">.</span>
+                <Input id="weightDecimal" name="weightDecimal" type="number" min="0" max="99" label="Weight (decimal)" hideLabel
+                  value={values.weightDecimal} onChange={handleChange} />
                 <div className="stat-unit">
-                  <label className="stat-unit__label" htmlFor="weightUnit">Weight units</label>
+                  <label className="field__label field__label--hidden" htmlFor="weightUnit">Weight units</label>
                   <select id="weightUnit" name="weightUnit" className="stat-unit__select"
                     value={values.weightUnit} onChange={handleChange}>
                     <option value="kg">kg</option>
@@ -246,14 +349,42 @@ export default function Register() {
             </fieldset>
 
             <fieldset className="stat-group">
-              <legend className="stat-group__title">Birthday</legend>
-              <div className="stat-row">
-                <Input id="birthMonth" name="birthMonth" type="number" min="1" max="12" label="Month"
-                  value={values.birthMonth} onChange={handleChange} />
-                <Input id="birthDay" name="birthDay" type="number" min="1" max="31" label="Day"
-                  value={values.birthDay} onChange={handleChange} />
-                <Input id="birthYear" name="birthYear" type="number" label="Year"
-                  value={values.birthYear} onChange={handleChange} />
+              <legend className="stat-group__title stat-group__title--required">Birthday</legend>
+              {/* Day, Month (written out), Year, then a calendar button. The years stop at
+                  16 years ago. The month's value is still its number (3 for March), so
+                  the server gets the same "YYYY-MM-DD" as before. */}
+              <div className="stat-row stat-row--date">
+                <div className="stat-unit stat-date__day">
+                  <label className="field__label field__label--hidden" htmlFor="birthDay">Day</label>
+                  <select id="birthDay" name="birthDay" className="stat-unit__select"
+                    value={values.birthDay} onChange={handleChange}>
+                    <option value="" disabled>Day</option>
+                    {Array.from({ length: daysInMonth(values.birthYear, values.birthMonth) }, (_, i) => (
+                      <option key={i + 1} value={String(i + 1)}>{i + 1}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="stat-unit stat-date__month">
+                  <label className="field__label field__label--hidden" htmlFor="birthMonth">Month</label>
+                  <select id="birthMonth" name="birthMonth" className="stat-unit__select"
+                    value={values.birthMonth} onChange={handleChange}>
+                    <option value="" disabled>Month</option>
+                    {MONTH_NAMES.map((month, i) => (
+                      <option key={month} value={String(i + 1)}>{month}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="stat-unit stat-date__year">
+                  <label className="field__label field__label--hidden" htmlFor="birthYear">Year</label>
+                  <select id="birthYear" name="birthYear" className="stat-unit__select"
+                    value={values.birthYear} onChange={handleChange}>
+                    <option value="" disabled>Year</option>
+                    {birthYears().map((year) => (
+                      <option key={year} value={String(year)}>{year}</option>
+                    ))}
+                  </select>
+                </div>
+                <CalendarButton values={values} onChange={handleCalendar} />
               </div>
               <FormError message={errors.dateOfBirth} id="dateOfBirth-error" />
             </fieldset>
@@ -263,9 +394,6 @@ export default function Register() {
         )}
 
         <div className="auth-actions">
-          <Button variant="secondary" onClick={handleBack} disabled={submitting}>
-            Back
-          </Button>
           <Button type="submit" disabled={submitting}>
             {step === 1 ? 'Continue' : submitting ? 'Creating account...' : 'Complete'}
           </Button>

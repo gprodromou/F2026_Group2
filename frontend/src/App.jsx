@@ -5,6 +5,7 @@
 
 import { BrowserRouter } from 'react-router-dom';
 import './styles/tokens.css';
+import './styles/theme-petrol.css'; // trial colour scheme: delete this line to go back to green + pink
 import AppRoutes from './routes';
 import { AuthProvider } from './state/AuthContext';
 

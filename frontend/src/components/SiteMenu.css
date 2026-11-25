@@ -1,0 +1,125 @@
+/* SiteMenu.css: the three-line button and the panel that slides in from the right.
+   Tokens only (tokens.css). */
+
+/* ---------- the three-line button ---------- */
+.site-menu__button {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-2);
+  width: var(--space-7);
+  height: var(--space-7);
+  padding: var(--space-2);
+  box-sizing: border-box;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+}
+
+.site-menu__bar {
+  display: block;
+  height: var(--space-1);
+  border-radius: var(--space-1);
+  background: var(--color-accent);
+  transition: background-color 150ms ease;
+}
+.site-menu__button:hover .site-menu__bar { background: var(--btn-primary-bg-hover); }
+
+.site-menu__button:focus-visible,
+.site-menu__close:focus-visible,
+.site-menu__link:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+/* ---------- the dark see-through layer behind the panel ---------- */
+.site-menu__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: color-mix(in srgb, var(--color-ink) 35%, transparent);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 250ms ease, visibility 0s linear 250ms;
+}
+.site-menu__overlay--open {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 250ms ease, visibility 0s;
+}
+
+/* ---------- the panel ---------- */
+.site-menu__panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 21;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  width: min(20rem, 85vw);
+  box-sizing: border-box;
+  padding: var(--space-5);
+  background: var(--menu-bg);
+  border-left: var(--border-width) solid var(--color-accent);
+  box-shadow: var(--menu-shadow);
+  font-family: var(--font-family-base);
+  transform: translateX(100%);
+  visibility: hidden;
+  transition: transform 300ms ease, visibility 0s linear 300ms;
+}
+.site-menu__panel--open {
+  transform: none;
+  visibility: visible;
+  transition: transform 300ms ease, visibility 0s;
+}
+
+.site-menu__close {
+  align-self: flex-end;
+  display: inline-flex;
+  width: var(--space-6);
+  height: var(--space-6);
+  padding: var(--space-1);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+}
+.site-menu__close svg { width: 100%; height: 100%; }
+.site-menu__close:hover { color: var(--color-accent); }
+
+.site-menu__nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.site-menu__link {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--menu-radius);
+  color: var(--color-text);
+  font-size: var(--font-size-lg);
+  text-decoration: none;
+}
+.site-menu__link:hover {
+  background: var(--menu-item-bg-hover);
+  color: var(--color-accent);
+}
+
+.site-menu__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-5);
+  border-top: var(--border-width-thin) solid var(--color-border-card);
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-menu__overlay,
+  .site-menu__panel,
+  .site-menu__bar { transition: none; }
+}

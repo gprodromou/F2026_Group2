@@ -42,54 +42,202 @@
 .auth-link { color: var(--color-link); }
 .auth-link:hover { color: var(--color-link-hover); }
 
-/* ---------- Register step 2 (Statistics) ---------- */
-.stat-group {
-  margin: 0 0 var(--space-3);
-  padding: var(--space-4);
-  border: none;
-  border-radius: var(--radius-md);
-  background: var(--color-grey-300-80);
+/* ---------- the Login / Register / two-factor frame: compact, so the page fits ----------
+   on the screen without a scroll bar (the login card on the Landing page has its own size) */
+.auth-layout .auth-card {
+  box-sizing: border-box;
+  max-width: 26rem;
+  padding: var(--space-5) var(--space-6);
+}
+.auth-layout .auth-title {
+  margin-bottom: var(--space-3);
+  font-size: calc(var(--font-size-2xl) * 0.85);
+}
+.auth-layout .auth-form { gap: var(--space-1); }
+.auth-layout .auth-footer { margin-top: var(--space-3); }
+
+/* smaller text and boxes, in the frame and in the Landing login card */
+.auth-card .field__input,
+.auth-card .stat-unit__select {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-sm);
 }
 
+/* ---------- Register step 2 (Statistics) ----------
+   Each group: title, then one row of small boxes. Height and weight are
+   [whole] . [decimal] [unit]; the birthday is [MM] [DD] [YYYY]. */
+.stat-group {
+  min-width: 0;   /* a fieldset is as wide as its content by default; this lets it fit the card */
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  border: none;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-white) 45%, transparent);
+}
+
+/* float + full width makes the legend sit INSIDE the box like a normal title
+   (by default a legend sits on the box's top edge, which looked off) */
 .stat-group__title {
+  float: left;
+  width: 100%;
+  margin: 0 0 var(--space-2);
   padding: 0;
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-md);
   font-style: italic;
+}
+.stat-group__title + * { clear: both; }
+
+.stat-group__title--required::after {
+  content: ' *';
+  color: var(--color-error);
+  font-style: normal;
+  font-weight: var(--font-weight-bold);
 }
 
 .stat-row {
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-2);
 }
 
 .stat-row .field {
-  flex: 1;
-  min-width: 5rem;
+  flex: 1 1 0;
+  min-width: 0;
+}
+.stat-row .field__input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Height and weight: [whole] . [decimal] [unit] on a 4-column grid, so every row lines up */
+.stat-row--measure {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--space-2) minmax(0, 1fr) 4.5rem;
+}
+.stat-row--measure .stat-unit { grid-column: 4; }
+
+/* cm (no decimal): the box and the cm dropdown sit together in the middle of the row.
+   The box keeps the width of one box in the m / ft rows: (row - dropdown - dot - 3 gaps) / 2 */
+.stat-row--no-decimal {
+  display: flex;
+  justify-content: center;
+}
+.stat-row--no-decimal .field {
+  flex: 0 0 calc((100% - 4.5rem - var(--space-2) * 4) / 2);
+}
+.stat-row--no-decimal .stat-unit { flex: 0 0 4.5rem; }
+
+/* Birthday: [Day] [Month] [Year] [calendar] */
+.stat-row--date {
+  display: grid;
+  grid-template-columns: 4.25rem minmax(0, 1fr) 5.25rem var(--space-6);
+}
+
+/* errors in this step are shown once per group, under the row, so no space is
+   reserved under each small box */
+.stat-row .field__error { display: none; }
+.stat-group .form-error { margin-top: var(--space-2); }
+
+.stat-dot {
+  text-align: center;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
 }
 
 .stat-unit {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+  flex: 0 0 4.5rem;
 }
 
-.stat-unit__label { font-size: var(--input-label-size); }
-
+/* the unit dropdown: a pill like the input boxes */
 .stat-unit__select {
+  width: 100%;
   font-family: inherit;
-  font-size: var(--font-size-md);
   color: var(--input-text);
-  background: var(--input-bg);
+  background-color: var(--input-bg);
   border: var(--border-width-thin) solid var(--input-border);
   border-radius: var(--input-radius);
-  padding: var(--input-padding-y) var(--input-padding-x);
+  cursor: pointer;
 }
 .stat-unit__select:focus {
   outline: none;
-  background: var(--input-bg-focus);
+  background-color: var(--input-bg-focus);
   border-color: var(--input-border-focus);
   box-shadow: var(--shadow-focus);
+}
+
+/* Browsers that let us style the open list (Chrome and Edge): rounded list, petrol
+   highlight instead of the system blue. Other browsers keep their own list. */
+@supports (appearance: base-select) {
+  .stat-unit__select,
+  .stat-unit__select::picker(select) {
+    appearance: base-select;
+  }
+
+  .stat-unit__select::picker-icon {
+    color: var(--color-accent);
+  }
+
+  .stat-unit__select::picker(select) {
+    max-height: 15rem;   /* the year list is long: it scrolls inside */
+    margin-top: var(--space-1);
+    padding: var(--space-1);
+    border: var(--border-width-thin) solid var(--color-border-card);
+    border-radius: var(--menu-radius);
+    background: var(--menu-bg);
+    box-shadow: var(--menu-shadow);
+  }
+
+  .stat-unit__select option {
+    padding: var(--space-1) var(--space-3);
+    border-radius: calc(var(--menu-radius) - var(--space-1));
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+  }
+  .stat-unit__select option::checkmark { display: none; }
+  .stat-unit__select option:hover,
+  .stat-unit__select option:focus-visible {
+    outline: none;
+    background: var(--menu-item-bg-hover);
+    color: var(--color-accent);
+  }
+  .stat-unit__select option:checked {
+    background: var(--color-accent);
+    color: var(--color-white);
+  }
+}
+
+/* the calendar button at the end of the birthday row */
+.stat-calendar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-6);
+  height: var(--space-6);
+  border-radius: var(--radius-sm);
+  color: var(--color-accent);
+}
+.stat-calendar:hover { color: var(--btn-primary-bg-hover); }
+.stat-calendar__icon { width: 100%; height: 100%; }
+
+/* the real date input covers the icon but cannot be seen: clicking the icon opens it */
+.stat-calendar__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+.stat-calendar:focus-within { box-shadow: var(--shadow-focus); }
+.stat-calendar__input::-webkit-calendar-picker-indicator {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
 }
 
 /* ---------- Two-factor screens ---------- */

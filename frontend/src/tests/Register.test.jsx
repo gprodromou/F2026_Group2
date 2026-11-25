@@ -81,6 +81,17 @@ describe('Register step 1', () => {
     expect(screen.getByText('Password must be at least 8 characters')).toBeTruthy();
   });
 
+  test('the password rule is shown under the box and ticks once it is met', () => {
+    renderRegister();
+    const hint = () => screen.getByText('At least 8 characters').closest('.field__hint');
+
+    expect(hint().className).not.toContain('field__hint--met');
+    expect(screen.getByLabelText('Password').getAttribute('aria-describedby')).toBe('password-hint');
+
+    type('Password', 'longenough');
+    expect(hint().className).toContain('field__hint--met');
+  });
+
   test('valid details move to step 2', () => {
     renderRegister();
     fillStep1();
@@ -97,13 +108,26 @@ describe('Register step 2', () => {
     press('Continue');
   }
 
-  test('Back returns to step 1 and keeps what was typed', () => {
+  // Week 7 (Yanna): step 2 has no Back button any more, only Complete.
+  test('step 2 has no Back button', () => {
     goToStep2();
-    press('Back');
 
-    expect(screen.getByRole('heading', { name: 'Register' })).toBeTruthy();
-    expect(screen.getByLabelText('Full name').value).toBe('Test User');
-    expect(screen.getByLabelText('Email address').value).toBe('test@example.com');
+    expect(screen.queryByRole('button', { name: 'Back' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Complete' })).toBeTruthy();
+  });
+
+  test('height in cm has no decimal box; m and ft do, and weight always does', () => {
+    goToStep2();
+
+    expect(screen.queryByLabelText('Height (decimal)')).toBeNull(); // cm is the default
+    expect(screen.getByLabelText('Weight (decimal)')).toBeTruthy();
+
+    type('Height units', 'm');
+    expect(screen.getByLabelText('Height (decimal)')).toBeTruthy();
+    type('Height units', 'ft');
+    expect(screen.getByLabelText('Height (decimal)')).toBeTruthy();
+    type('Height units', 'cm');
+    expect(screen.queryByLabelText('Height (decimal)')).toBeNull();
   });
 
   test('missing statistics show messages and nothing is sent', () => {
@@ -117,26 +141,64 @@ describe('Register step 2', () => {
     expect(global.fetch).not.toHaveBeenCalled();
   });
 
-  test('a date that does not exist is refused', () => {
-    mockFetch();
+  // Week 7 (Yanna): the birthday is three dropdowns (Day, Month, Year) and a calendar.
+  test('the birthday dropdowns: Day, Month written out, Year', () => {
     goToStep2();
-    fillStep2();
-    type('Month', '2');
-    type('Day', '31');
-    press('Complete');
 
-    expect(screen.getByText('Date of birth is not a valid date')).toBeTruthy();
-    expect(global.fetch).not.toHaveBeenCalled();
+    const month = screen.getByLabelText('Month');
+    expect(month.tagName).toBe('SELECT');
+    expect(screen.getByRole('option', { name: 'March' }).value).toBe('3'); // name shown, number sent
+    expect(screen.getByLabelText('Day').tagName).toBe('SELECT');
+    expect(screen.getByLabelText('Year').tagName).toBe('SELECT');
   });
 
-  test('a date in the future is refused', () => {
-    mockFetch();
+  test('the day list follows the month, and an impossible day is cleared', () => {
     goToStep2();
-    fillStep2();
-    type('Year', '2999');
-    press('Complete');
+    type('Day', '31');
+    type('Year', '1998');
+    type('Month', '2'); // February 1998 has 28 days
 
-    expect(screen.getByText('Date of birth cannot be in the future')).toBeTruthy();
+    expect(screen.getByLabelText('Day').value).toBe(''); // 31 February is not possible
+    const days = screen.getByLabelText('Day').querySelectorAll('option:not([value=""])');
+    expect(days.length).toBe(28);
+  });
+
+  describe('age', () => {
+    // Freeze "today" so the year list and the age check do not change with the real date.
+    beforeEach(() => jest.useFakeTimers({ now: new Date('2026-06-15T12:00:00') }));
+    afterEach(() => jest.useRealTimers());
+
+    test('the newest year in the list is 16 years ago', () => {
+      goToStep2();
+      const years = Array.from(screen.getByLabelText('Year').querySelectorAll('option'))
+        .map((option) => option.value)
+        .filter(Boolean);
+
+      expect(years[0]).toBe('2010');
+      expect(years).not.toContain('2011');
+    });
+
+    test('someone who turns 16 later this year is refused', () => {
+      mockFetch();
+      goToStep2();
+      fillStep2();
+      type('Year', '2010');
+      type('Month', '12');
+      type('Day', '1');
+      press('Complete');
+
+      expect(screen.getByText('You must be at least 16 to register')).toBeTruthy();
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+  });
+
+  test('choosing a date in the calendar fills the three dropdowns', () => {
+    goToStep2();
+    fireEvent.change(screen.getByLabelText('Choose from a calendar'), { target: { value: '1998-03-15' } });
+
+    expect(screen.getByLabelText('Day').value).toBe('15');
+    expect(screen.getByLabelText('Month').value).toBe('3');
+    expect(screen.getByLabelText('Year').value).toBe('1998');
   });
 });
 
@@ -171,9 +233,9 @@ describe('Register complete', () => {
     fillStep1();
     press('Continue');
     fillStep2();
+    type('Height units', 'ft'); // first: the decimal box only appears for m and ft
     type('Height (whole)', '5');
     type('Height (decimal)', '5');
-    type('Height units', 'ft');
     type('Weight (whole)', '154');
     type('Weight units', 'lb');
     press('Complete');
@@ -182,6 +244,24 @@ describe('Register complete', () => {
     const body = JSON.parse(global.fetch.mock.calls[0][1].body);
     expect(body.height).toBe(167.6); // 5.5 ft
     expect(body.weight).toBe(69.9);  // 154 lb
+  });
+
+  test('metres are converted to cm, and an empty decimal box is fine', async () => {
+    mockFetch({ status: 201, body: { userId: 1 } }, { status: 200, body: { token: 't' } });
+    renderRegister();
+    fillStep1();
+    press('Continue');
+    fillStep2();
+    type('Height units', 'm');
+    type('Height (whole)', '1');
+    type('Height (decimal)', '75');
+    type('Weight (whole)', '70'); // weight decimal left empty on purpose
+    press('Complete');
+
+    await screen.findByText('Two-factor setup page');
+    const body = JSON.parse(global.fetch.mock.calls[0][1].body);
+    expect(body.height).toBe(175); // 1.75 m
+    expect(body.weight).toBe(70);
   });
 
   test('an email that is already registered sends the user back to step 1 with the error', async () => {

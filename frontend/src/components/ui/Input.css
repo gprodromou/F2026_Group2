@@ -1,5 +1,22 @@
 .field { display: flex; flex-direction: column; gap: var(--space-1); }
 .field__label { font-size: var(--input-label-size); color: var(--color-text); }
+/* a label that screen readers read but the screen does not show (Input with hideLabel) */
+.field__label--hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* the red star of a mandatory field (Input with required) */
+.field--required .field__label::after {
+  content: ' *';
+  color: var(--color-error);
+  font-weight: var(--font-weight-bold);
+}
 
 .field__input {
   font-family: inherit;
@@ -17,7 +34,18 @@
   box-shadow: var(--shadow-focus);
 }
 .field__input:disabled { background: var(--input-bg-disabled); cursor: not-allowed; }
-.field__input--error { border-color: var(--color-error, #c62828); }
+.field__input--error { border-color: var(--color-error); }
+
+.field__hint {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+.field__hint-mark { display: inline-block; width: var(--space-3); text-align: center; }
+.field__hint--met { color: var(--color-accent); font-weight: var(--font-weight-bold); }
 
 .field__error {
   /* keeps the space reserved so the layout does not jump when an error appears */

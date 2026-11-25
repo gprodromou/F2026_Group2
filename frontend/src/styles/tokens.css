@@ -36,6 +36,7 @@
   /* ---------- 4. COLOUR: links (error/status colours out of scope for now) ---------- */
   --color-link: #0d6efd;             /* "Forgot Password?" / "Register Here" */
   --color-link-hover: #0a58ca;       /* darker link */
+  --color-error: #c62828;            /* error messages, mandatory-field stars */
 
   /* ---------- 5. SEMANTIC COLOURS (components use THESE, not the raw ones) ---------- */
   --color-bg: var(--color-white);
@@ -159,6 +160,21 @@
   --bubble-bg: var(--color-bg-bubble);
   --bubble-border: var(--border-width-thin) dashed var(--color-green-500);
   --bubble-radius: var(--radius-bubble);
+  --bubble-border-color: var(--color-green-500);
+  --bubble-text: var(--color-text);
+
+  /* Lines under the header / over the footer (none in the original design) */
+  --header-border: none;
+  --footer-border: none;
+
+  /* Dropdown menu ("Services" in the header) */
+  --menu-bg: var(--color-white);
+  --menu-radius: 0.75rem;
+  --menu-shadow: 0 0.5rem 1.5rem color-mix(in srgb, var(--color-ink) 14%, transparent);
+  --menu-item-bg-hover: var(--color-green-100);
+
+  /* Motion: how long the landing carousel takes to fade between slides */
+  --slide-fade-duration: 700ms;
 
   /* Footer */
   --footer-icon-color: var(--color-grey-600);

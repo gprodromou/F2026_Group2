@@ -126,6 +126,20 @@ describe('WorkoutList', () => {
     await waitFor(() => expect(items()).toHaveLength(3));
   });
 
+  // Week 7 (Yanna): the entry form can save several types joined ("HIIT, Boxing").
+  test('a workout with several types is found by each of them, and the list shows them separately', async () => {
+    fakeServer([...ROWS, { workout_id: 4, workout_date: '2026-11-12', exercise_type: 'HIIT, Kickboxing', duration: 40, calories_burned: 350, equipment_used: 'Jump rope' }]);
+    renderScreen();
+    await screen.findByRole('list', { name: 'Your workouts' });
+
+    const options = Array.from(screen.getByLabelText('Workout type').options).map((o) => o.value);
+    expect(options).toContain('Kickboxing');
+    expect(options).not.toContain('HIIT, Kickboxing');
+
+    set('Workout type', 'HIIT');
+    await waitFor(() => expect(items()).toHaveLength(2)); // the HIIT one and "HIIT, Kickboxing"
+  });
+
   test('the type list has the form\'s types and the custom type the user typed', async () => {
     fakeServer();
     renderScreen();
@@ -240,6 +254,15 @@ describe('summarise', () => {
     const result = summarise([ROWS[0], { ...ROWS[0], workout_id: 9, duration: 20 }]);
     expect(result.bars).toHaveLength(1);
     expect(result.bars[0].minutes).toBe(50);
+  });
+
+  test('a workout with several types shares its time equally between them', () => {
+    const result = summarise([{ ...ROWS[0], exercise_type: 'HIIT, Strength & Resistance', duration: 60 }]);
+    expect(result.minutes).toBe(60);
+    expect(result.bars.map((b) => [b.type, b.minutes])).toEqual([
+      ['HIIT', 30],
+      ['Strength & Resistance', 30],
+    ]);
   });
 
   test('calories stay empty when no workout has any', () => {

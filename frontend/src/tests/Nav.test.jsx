@@ -104,16 +104,20 @@ describe('Nav inside the real app', () => {
     );
   }
 
-  test('an administrator sees the Admin link in the header of the landing page', () => {
+  // Week 7 (Yanna): when signed in, the landing page header is the three-line menu
+  // (SiteMenu), so the links are inside it: open it first.
+  test('an administrator sees the Admin link in the menu of the landing page', () => {
     localStorage.setItem('token', makeToken({ role: 'admin' }));
     renderApp();
+    fireEvent.click(button('Open menu'));
 
     expect(link('Admin')).toBeTruthy();
   });
 
-  test('a normal user does not see the Admin link in the header of the landing page', () => {
+  test('a normal user does not see the Admin link in the menu of the landing page', () => {
     localStorage.setItem('token', makeToken({ role: 'user' }));
     renderApp();
+    fireEvent.click(button('Open menu'));
 
     expect(link('Admin')).toBeNull();
     expect(button('Log out')).toBeTruthy();

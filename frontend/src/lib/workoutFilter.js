@@ -5,7 +5,7 @@
 // Dates are 'YYYY-MM-DD', the same format as the workout_date column in the database,
 // so they can be compared as plain text.
 
-import { WORKOUT_TYPE_NAMES } from './workoutTypes';
+import { WORKOUT_TYPE_NAMES, splitTypes } from './workoutTypes';
 
 export const NO_FILTER = Object.freeze({ from: '', to: '', type: '' });
 
@@ -40,13 +40,14 @@ export function filterToQuery(filter) {
 // Keeps only the workouts that match the filter. Works on the rows the API returns
 // ({ workout_date, exercise_type, ... }). The type is compared without caring about
 // capital letters, so 'running' typed in the entry form still matches 'Running'.
+// A workout saved with several types ("HIIT, Strength & Resistance") matches each of them.
 export function applyFilter(workouts, filter) {
   if (isEmptyFilter(filter)) return workouts;
   const type = filter.type.toLowerCase();
   return workouts.filter((workout) => {
     if (filter.from && workout.workout_date < filter.from) return false;
     if (filter.to && workout.workout_date > filter.to) return false;
-    if (type && String(workout.exercise_type).toLowerCase() !== type) return false;
+    if (type && !splitTypes(workout.exercise_type).some((t) => t.toLowerCase() === type)) return false;
     return true;
   });
 }

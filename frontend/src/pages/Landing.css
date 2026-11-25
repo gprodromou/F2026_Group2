@@ -179,6 +179,7 @@
   gap: var(--space-3);
   text-align: center;
 }
+.landing-welcome__actions .nav-button { border-radius: var(--input-radius); } /* pill-shaped */
 
 /* ---------- About / Services / Contact ---------- */
 .landing-section {

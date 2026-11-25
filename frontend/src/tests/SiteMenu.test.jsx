@@ -4,6 +4,7 @@
 //   - Escape and the X close it
 //   - choosing Home goes back to the home page
 //   - the menu also has a Register button under Log in
+//   - signed in, it has the app links (and Admin for administrators) and Log out
 //   - step 1 of Register no longer has a Back button (the menu replaces it)
 //   - every field on step 1 of Register is marked as required
 
@@ -20,6 +21,14 @@ function renderAt(path) {
       </AuthProvider>
     </MemoryRouter>
   );
+}
+
+// A fake login token, the same way Nav.test.jsx makes one (AuthContext reads it like a JWT).
+function makeToken(role = 'user') {
+  const encode = (obj) =>
+    btoa(JSON.stringify(obj)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  const payload = { user_id: 1, role, exp: Math.floor(Date.now() / 1000) + 3600 };
+  return `${encode({ alg: 'HS256', typ: 'JWT' })}.${encode(payload)}.fake-signature`;
 }
 
 const menuButton = () => screen.getByRole('button', { name: 'Open menu' });
@@ -68,6 +77,28 @@ describe('SiteMenu', () => {
     const register = screen.getByRole('link', { name: 'Register' });
     expect(register.getAttribute('href')).toBe('/register');
     expect(register.closest('.site-menu__panel')).toBeTruthy();
+  });
+
+  test('signed in: the menu has the app links and Log out instead of Log in', () => {
+    localStorage.setItem('token', makeToken());
+    renderAt('/login');
+    fireEvent.click(menuButton());
+
+    const menu = siteMenu();
+    expect(menu.textContent).toContain('Log Workout');
+    expect(menu.textContent).toContain('History');
+    expect(menu.textContent).toContain('Goals');
+    expect(menu.textContent).not.toContain('Admin');
+    expect(screen.getByRole('button', { name: 'Log out' })).toBeTruthy();
+    expect(screen.queryByRole('link', { name: 'Register' })).toBeNull();
+  });
+
+  test('an administrator also gets Admin in the menu', () => {
+    localStorage.setItem('token', makeToken('admin'));
+    renderAt('/login');
+    fireEvent.click(menuButton());
+
+    expect(screen.getByRole('link', { name: 'Admin' })).toBeTruthy();
   });
 
   test('Escape closes the menu', () => {

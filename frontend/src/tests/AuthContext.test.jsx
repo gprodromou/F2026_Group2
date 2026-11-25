@@ -121,6 +121,8 @@ describe('logout (RQ04, UC03)', () => {
     );
 
     expect(screen.queryByRole('link', { name: 'Sign in' })).toBeNull();
+    // Week 7: when signed in, Log out sits in the three-line menu (SiteMenu), so open it first.
+    fireEvent.click(screen.getByRole('button', { name: 'Open menu' }));
     fireEvent.click(screen.getByRole('button', { name: 'Log out' }));
 
     // Now on the real login page from routes.jsx, with no token left.

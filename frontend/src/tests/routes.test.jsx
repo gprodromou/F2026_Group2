@@ -117,13 +117,13 @@ describe('app shell', () => {
         </MemoryRouter>
       );
 
-      expect(await screen.findByRole('heading', { name: 'My Goals' })).toBeTruthy();
+      expect(await screen.findByRole('heading', { name: 'Goals' })).toBeTruthy();
       expect(screen.queryByRole('heading', { name: /^page not found$/i })).toBeNull();
       // No top bar from Layout: the links live only in the three-line menu, and there is one footer.
       expect(screen.queryByRole('navigation', { name: 'Main navigation' })).toBeNull();
       expect(screen.queryByRole('link', { name: 'History' })).toBeNull();
       expect(screen.getAllByText(/all rights reserved/i)).toHaveLength(1);
-      fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Open menu' }));
       expect(screen.getByRole('link', { name: 'Goals' })).toBeTruthy();
     } finally {
       global.fetch = realFetch;

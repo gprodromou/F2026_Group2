@@ -88,12 +88,19 @@ describe('Landing', () => {
     expect(screen.getByRole('heading', { name: 'Contact us' })).toBeTruthy();
   });
 
-  test('signed-in users do not get the About / Services / Contact us header links', () => {
+  test('signed in: the header is just the logo and the three-line menu, with the app links inside', () => {
     localStorage.setItem('token', makeToken());
     renderHome();
 
-    const nav = screen.getByRole('navigation', { name: 'Main navigation' });
-    expect(nav.textContent).not.toMatch(/About|Services|Contact us/);
+    expect(screen.queryByRole('navigation', { name: 'Main navigation' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Open menu' }));
+
+    const menu = screen.getByRole('navigation', { name: 'Site menu' });
+    expect(menu.textContent).toContain('Log Workout');
+    expect(menu.textContent).toContain('History');
+    expect(menu.textContent).toContain('Goals');
+    expect(menu.textContent).not.toMatch(/About|Services|Contact us/);
+    expect(screen.getByRole('button', { name: 'Log out' })).toBeTruthy();
   });
 
   test('logging in from the landing card sends the details to POST /auth/login', async () => {

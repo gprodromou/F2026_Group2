@@ -17,6 +17,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button, Input, FormError } from '../components/ui';
 import { validateForm, registerRules, required } from '../lib/validate';
 import { useAuth } from '../state/AuthContext';
+import DateSelect from '../components/DateSelect';
+import { MONTH_NAMES, isoDate, yearRange } from '../lib/dates';
 import './Auth.css';
 
 const SETUP_PATH = '/two-factor/setup'; // new accounts set up two-factor login first
@@ -54,13 +56,7 @@ const STEP1_RULES = {
 // ---------- birthday: Day / Month / Year dropdowns, plus a calendar ----------
 export const MIN_AGE = 16;   // you must be at least 16 to register
 const MAX_AGE = 100;         // how far back the year list goes
-export const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-];
-
-const pad = (n) => String(n).padStart(2, '0');
-const isoDate = (date) => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+export { MONTH_NAMES }; // the months, written out (lib/dates.js)
 
 // The latest birthday allowed today (exactly MIN_AGE years ago) and the earliest one.
 function birthdayLimits(today = new Date()) {
@@ -72,16 +68,7 @@ function birthdayLimits(today = new Date()) {
 // Years from the newest allowed (16 years ago) back to 100 years ago.
 function birthYears() {
   const { latest, earliest } = birthdayLimits();
-  const years = [];
-  for (let y = latest.getFullYear(); y >= earliest.getFullYear(); y -= 1) years.push(y);
-  return years;
-}
-
-// How many days the chosen month has (31 until a month is picked; 29 for February
-// until a year is picked, so the 29th is not lost too early).
-function daysInMonth(year, month) {
-  if (!month) return 31;
-  return new Date(Number(year) || 2000, Number(month), 0).getDate();
+  return yearRange(latest.getFullYear(), earliest.getFullYear());
 }
 
 // The date is real and in the past (validate.js), and the person is at least 16.
@@ -144,37 +131,6 @@ const CM_PER_UNIT = { cm: 1, m: 100, ft: 30.48 };
 const toCentimetres = (value, unit) => round1(Number(value) * (CM_PER_UNIT[unit] || 1));
 const toKilograms = (value, unit) => round1(unit === 'lb' ? Number(value) * 0.45359237 : Number(value));
 
-// The calendar: a real <input type="date"> laid invisibly over a calendar icon, so a click
-// anywhere on the icon opens the browser's own date picker (showPicker() where supported).
-// It can only pick dates from 100 years ago up to 16 years ago.
-function CalendarButton({ values, onChange }) {
-  const { latest, earliest } = birthdayLimits();
-  const { birthYear: y, birthMonth: m, birthDay: d } = values;
-  const current = y && m && d ? `${y}-${pad(m)}-${pad(d)}` : '';
-
-  return (
-    <span className="stat-calendar">
-      <svg className="stat-calendar__icon" viewBox="0 0 24 24" aria-hidden="true">
-        <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" fill="none" stroke="currentColor" strokeWidth="1.8" />
-        <path d="M3.5 10h17M8 3v4M16 3v4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-        <rect x="7" y="13" width="3" height="3" rx="0.6" fill="currentColor" />
-      </svg>
-      <input
-        type="date"
-        className="stat-calendar__input"
-        aria-label="Choose from a calendar"
-        min={isoDate(earliest)}
-        max={isoDate(latest)}
-        value={current}
-        onChange={onChange}
-        onClick={(event) => {
-          try { event.currentTarget.showPicker?.(); } catch { /* older browsers open it themselves */ }
-        }}
-      />
-    </span>
-  );
-}
-
 export default function Register() {
   const navigate = useNavigate();
   const { signIn } = useAuth(); // saves the token AND tells the whole app we are signed in
@@ -186,27 +142,12 @@ export default function Register() {
 
   function handleChange(event) {
     const { name, value } = event.target;
-    setValues((current) => {
-      const next = { ...current, [name]: value };
-      // A new month or year can make the chosen day impossible (31 -> February): clear it.
-      if ((name === 'birthMonth' || name === 'birthYear') &&
-          Number(next.birthDay) > daysInMonth(next.birthYear, next.birthMonth)) {
-        next.birthDay = '';
-      }
-      return next;
-    });
+    setValues((current) => ({ ...current, [name]: value }));
   }
 
-  // The calendar gives "YYYY-MM-DD"; split it into the three dropdowns.
-  function handleCalendar(event) {
-    const [y, m, d] = event.target.value.split('-');
-    if (!y || !m || !d) return;
-    setValues((current) => ({
-      ...current,
-      birthYear: String(Number(y)),
-      birthMonth: String(Number(m)),
-      birthDay: String(Number(d)),
-    }));
+  // The birthday comes from DateSelect as { day, month, year }.
+  function handleBirthday({ day, month, year }) {
+    setValues((current) => ({ ...current, birthDay: day, birthMonth: month, birthYear: year }));
   }
 
   async function handleSubmit(event) {
@@ -317,7 +258,7 @@ export default function Register() {
                 )}
                 <div className="stat-unit">
                   <label className="field__label field__label--hidden" htmlFor="heightUnit">Height units</label>
-                  <select id="heightUnit" name="heightUnit" className="stat-unit__select"
+                  <select id="heightUnit" name="heightUnit" className="select-pill"
                     value={values.heightUnit} onChange={handleChange}>
                     <option value="cm">cm</option>
                     <option value="m">m</option>
@@ -338,7 +279,7 @@ export default function Register() {
                   value={values.weightDecimal} onChange={handleChange} />
                 <div className="stat-unit">
                   <label className="field__label field__label--hidden" htmlFor="weightUnit">Weight units</label>
-                  <select id="weightUnit" name="weightUnit" className="stat-unit__select"
+                  <select id="weightUnit" name="weightUnit" className="select-pill"
                     value={values.weightUnit} onChange={handleChange}>
                     <option value="kg">kg</option>
                     <option value="lb">lb</option>
@@ -353,39 +294,14 @@ export default function Register() {
               {/* Day, Month (written out), Year, then a calendar button. The years stop at
                   16 years ago. The month's value is still its number (3 for March), so
                   the server gets the same "YYYY-MM-DD" as before. */}
-              <div className="stat-row stat-row--date">
-                <div className="stat-unit stat-date__day">
-                  <label className="field__label field__label--hidden" htmlFor="birthDay">Day</label>
-                  <select id="birthDay" name="birthDay" className="stat-unit__select"
-                    value={values.birthDay} onChange={handleChange}>
-                    <option value="" disabled>Day</option>
-                    {Array.from({ length: daysInMonth(values.birthYear, values.birthMonth) }, (_, i) => (
-                      <option key={i + 1} value={String(i + 1)}>{i + 1}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="stat-unit stat-date__month">
-                  <label className="field__label field__label--hidden" htmlFor="birthMonth">Month</label>
-                  <select id="birthMonth" name="birthMonth" className="stat-unit__select"
-                    value={values.birthMonth} onChange={handleChange}>
-                    <option value="" disabled>Month</option>
-                    {MONTH_NAMES.map((month, i) => (
-                      <option key={month} value={String(i + 1)}>{month}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="stat-unit stat-date__year">
-                  <label className="field__label field__label--hidden" htmlFor="birthYear">Year</label>
-                  <select id="birthYear" name="birthYear" className="stat-unit__select"
-                    value={values.birthYear} onChange={handleChange}>
-                    <option value="" disabled>Year</option>
-                    {birthYears().map((year) => (
-                      <option key={year} value={String(year)}>{year}</option>
-                    ))}
-                  </select>
-                </div>
-                <CalendarButton values={values} onChange={handleCalendar} />
-              </div>
+              <DateSelect
+                ids={{ day: 'birthDay', month: 'birthMonth', year: 'birthYear' }}
+                value={{ day: values.birthDay, month: values.birthMonth, year: values.birthYear }}
+                onChange={handleBirthday}
+                years={birthYears()}
+                min={isoDate(birthdayLimits().earliest)}
+                max={isoDate(birthdayLimits().latest)}
+              />
               <FormError message={errors.dateOfBirth} id="dateOfBirth-error" />
             </fieldset>
 

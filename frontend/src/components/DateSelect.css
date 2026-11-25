@@ -1,0 +1,46 @@
+/* DateSelect.css: [Day] [Month] [Year] [calendar] on one row. Tokens only. */
+
+.date-select {
+  display: grid;
+  grid-template-columns: 3.75rem minmax(0, 1fr) 4.75rem var(--space-6);
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.date-select .select-pill {
+  width: 100%;
+  padding-left: var(--space-2);    /* tighter than other dropdowns, so "September" fits */
+  padding-right: var(--space-2);
+}
+
+/* the calendar button at the end of the row */
+.date-select__calendar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-6);
+  height: var(--space-6);
+  border-radius: var(--radius-sm);
+  color: var(--color-accent);
+}
+.date-select__calendar:hover { color: var(--btn-primary-bg-hover); }
+.date-select__calendar:focus-within { box-shadow: var(--shadow-focus); }
+.date-select__icon { width: 100%; height: 100%; }
+
+/* the real date input covers the icon but cannot be seen: clicking the icon opens it */
+.date-select__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+.date-select__input::-webkit-calendar-picker-indicator {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}

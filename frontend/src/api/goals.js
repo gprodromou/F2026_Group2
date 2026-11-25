@@ -32,3 +32,26 @@ export async function listGoalsWithProgress(api) {
     })
   );
 }
+
+// ---------- creating, changing and deleting goals (Yanna, week 7) ----------
+// ⚠ TO CONFIRM WITH MARIUS / GEORGE: these use the usual REST names. If the backend's
+// routes or field names are different, change them HERE only; the goals page calls
+// these three functions and nothing else.
+//   POST   /goals       { goalType, targetValue, targetDate }  -> the new goal
+//   PUT    /goals/:id   { targetValue, targetDate }            -> the changed goal
+//   DELETE /goals/:id                                          -> nothing
+// goalType is 'calories' | 'duration' | 'workouts' (lib/goalTypes.js); targetValue is a
+// number (kcal, minutes or workouts); targetDate is 'YYYY-MM-DD'. No user id is sent:
+// the server takes it from the login token, like the workouts.
+
+export function createGoal(api, { goalType, targetValue, targetDate }) {
+  return api.post('/goals', { goalType, targetValue, targetDate });
+}
+
+export function updateGoal(api, goalId, { targetValue, targetDate }) {
+  return api.put(`/goals/${goalId}`, { targetValue, targetDate });
+}
+
+export function deleteGoal(api, goalId) {
+  return api.del(`/goals/${goalId}`);
+}

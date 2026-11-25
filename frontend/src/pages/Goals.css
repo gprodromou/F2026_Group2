@@ -1,36 +1,304 @@
-/* Goals.css: the goals screen. Tokens only (tokens.css).
-   The title, menu button and footer come from AppShell; each card is GoalCard. */
+/* Goals.css: the goals screen, to Yanna's design (week 7). Tokens only (tokens.css).
+   The header, menu, title and footer come from AppShell. */
 
-/* The big pink card, same frame as the history and workout entry screens */
 .goals-page {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-5);
-  box-sizing: border-box;
+  /* week 7: on this page nothing is oval; boxes are square with rounded corners */
+  --goals-corner: var(--space-3);
+  --goals-corner-small: var(--space-2);
+  display: grid;
+  grid-template-columns: 24rem minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: start;
+}
+.goals-page *,
+.goals-page *::before,
+.goals-page *::after { box-sizing: border-box; }
+
+/* ---------- the two petrol-tinted cards ---------- */
+.goals-card {
+  min-width: 0;
+  margin: 0;
+  padding: var(--space-4) var(--space-4) var(--space-5);
   background: var(--color-bg-card-login);
   border: var(--border-width) solid var(--color-border-card-login);
-  border-radius: var(--card-radius);
-  padding: var(--card-padding);
+  border-radius: calc(var(--card-radius) * 0.75);
 }
 
-/* The goal cards in a grid: as many columns as fit, at least about 18rem wide */
-.goals-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
-  gap: var(--space-4);
-  margin: 0;
+/* "New Goal" / "Current Goals", italic, with a petrol line under them */
+.goals-card__title {
+  width: fit-content;
+  margin: 0 auto var(--space-4);
+  padding: 0 var(--space-3) var(--space-1);
+  border-bottom: calc(var(--border-width-thin) * 2) solid var(--color-accent);
+  text-align: center;
+  font-size: var(--font-size-xl);
+  font-style: italic;
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-tight);
+}
+
+/* ---------- left: the grey panels of the New Goal form ---------- */
+.goals-panel {
+  min-width: 0;
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--card-bg);
+  box-shadow: 0 var(--space-1) var(--space-3) color-mix(in srgb, var(--color-ink) 12%, transparent);
+}
+
+/* float + full width keeps the legend INSIDE the panel, like a normal title */
+.goals-panel__title {
+  float: left;
+  width: 100%;
+  margin: 0 0 var(--space-2);
   padding: 0;
+  font-size: var(--font-size-md);
+  font-style: italic;
+}
+.goals-panel__title + * { clear: both; }
+.goals-panel .form-error { margin-top: var(--space-2); }
+
+/* Type of Goal: petrol icon next to the dropdown, both the same height */
+.goal-type {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.goal-type__icon {
+  flex-shrink: 0;
+  display: inline-flex;
+  width: var(--space-6);
+  height: var(--space-6);
+  color: var(--color-accent);
+}
+.goal-type__icon svg { width: 100%; height: 100%; }
+.goal-type .goal-select { flex: 1; min-width: 0; }
+
+.goal-select .field__label {
+  display: block;
+  margin-bottom: var(--space-1);
+  font-size: var(--font-size-xs);
+}
+
+.goal-target--duration {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.goal-hint {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  font-style: italic;
+  color: var(--color-text-muted);
+}
+
+.goals-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-2);
+}
+
+/* the plus in front of "Add goal" */
+.goals-add {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.goals-add svg {
+  width: var(--space-4);
+  height: var(--space-4);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+}
+
+/* ---------- right: the grey box with the list of goals ---------- */
+.goals-box {
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--card-bg);
+  box-shadow: 0 var(--space-1) var(--space-3) color-mix(in srgb, var(--color-ink) 12%, transparent);
+}
+
+/* the list scrolls inside the box when there are many goals */
+.goals-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-height: 30rem;
+  margin: 0;
+  padding: 0 var(--space-1) 0 0;
+  overflow-y: auto;
   list-style: none;
+  scrollbar-color: var(--color-grey-200) transparent;
 }
 
 .goals-message {
-  margin: 0;
+  margin: var(--space-3);
   text-align: center;
   font-style: italic;
 }
 
-/* Phones: one card per row, less padding */
-@media (max-width: 40rem) {
-  .goals-page { padding: var(--space-4); }
-  .goals-list { grid-template-columns: 1fr; }
+/* one goal: a white row that opens */
+.goal-item {
+  border-radius: var(--goals-corner);
+  background: var(--color-white);
+  box-shadow: 0 var(--space-1) var(--space-2) color-mix(in srgb, var(--color-ink) 10%, transparent);
+  overflow: hidden;
 }
+
+.goal-item__heading { margin: 0; }
+
+.goal-item__toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: none;
+  background: var(--color-grey-100);   /* the title bar is grey; the open part stays white */
+  color: var(--color-text);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.goal-item__toggle:hover { background: var(--color-grey-150); }
+.goal-item__toggle:focus-visible { outline: none; box-shadow: inset var(--shadow-focus); }
+
+.goal-item__name {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--font-size-lg);
+  font-style: italic;
+}
+
+/* the arrow points left when closed and down when open, as in the design */
+.goal-item__chevron {
+  flex-shrink: 0;
+  width: var(--space-5);
+  height: var(--space-5);
+  fill: none;
+  stroke: var(--color-text);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transform: rotate(90deg);
+  transition: transform 200ms ease;
+}
+.goal-item--open .goal-item__chevron { transform: none; }
+
+/* the small status label next to the name */
+.goal-badge {
+  flex-shrink: 0;
+  padding: var(--space-1) var(--space-2);
+  line-height: 1;
+  border: var(--border-width-thin) solid var(--color-accent);
+  border-radius: var(--goals-corner-small);   /* square with rounded corners */
+  background: var(--color-white);
+  color: var(--color-accent);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+}
+.goal-badge--completed { background: var(--color-accent); color: var(--color-white); }
+.goal-badge--expired { border-color: var(--color-grey-400); color: var(--color-text-muted); }
+
+/* the open part */
+.goal-item__body {
+  padding: var(--space-3) var(--space-5) var(--space-4);
+  border-top: var(--border-width-thin) solid var(--color-grey-200);
+}
+
+.goal-details {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0 0 var(--space-3);
+}
+.goal-details div { display: flex; gap: var(--space-2); }
+.goal-details dt { font-weight: var(--font-weight-bold); }
+.goal-details dt::after { content: ':'; }
+.goal-details dd { margin: 0; }
+
+.goal-progress { margin-bottom: var(--space-3); }
+.goal-progress__label {
+  margin: 0 0 var(--space-1);
+  font-style: italic;
+}
+.goal-progress__numbers {
+  font-size: var(--font-size-sm);
+  font-style: normal;
+  color: var(--color-text-muted);
+}
+
+.goal-edit { margin-bottom: var(--space-3); }
+.goal-edit__label {
+  margin: var(--space-2) 0 var(--space-1);
+  font-weight: var(--font-weight-bold);
+}
+.goal-edit .goal-target { max-width: 22rem; }
+
+/* Update / Delete (and Save / Cancel) */
+.goal-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+}
+.goal-buttons__question { font-style: italic; }
+
+.goal-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-4);
+  border: var(--border-width-thin) solid var(--color-accent);
+  border-radius: var(--goals-corner-small);   /* square with rounded corners */
+  background: var(--color-white);
+  color: var(--color-accent);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+.goal-button svg {
+  width: var(--space-4);
+  height: var(--space-4);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.goal-button:hover:not(:disabled) { background: var(--menu-item-bg-hover); }
+.goal-button:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+.goal-button:disabled { opacity: 0.6; cursor: progress; }
+
+.goal-button--primary,
+.goal-button--danger-solid { color: var(--color-white); }
+.goal-button--primary { background: var(--color-accent); }
+.goal-button--primary:hover:not(:disabled) { background: var(--btn-primary-bg-hover); }
+.goal-button--danger { border-color: var(--color-error); color: var(--color-error); }
+.goal-button--danger-solid { border-color: var(--color-error); background: var(--color-error); }
+.goal-button--danger-solid:hover:not(:disabled) { background: var(--color-error); opacity: 0.9; }
+
+@media (prefers-reduced-motion: reduce) {
+  .goal-item__chevron,
+  .goal-button { transition: none; }
+}
+
+/* narrow screens: New Goal above Current Goals */
+@media (max-width: 56rem) {
+  .goals-page { grid-template-columns: 1fr; }
+}
+
+/* square-with-rounded-corners versions of the shared pieces, on this page only:
+   the dropdowns, the calendar button and Bogdan C's progress bar */
+.goals-page .select-pill { border-radius: var(--goals-corner-small); }
+.goals-page .select-pill::picker(select) { border-radius: var(--goals-corner-small); }
+.goals-page .date-select__calendar { border-radius: var(--goals-corner-small); }
+.goals-page .progress__track,
+.goals-page .progress__fill { border-radius: var(--space-1); }

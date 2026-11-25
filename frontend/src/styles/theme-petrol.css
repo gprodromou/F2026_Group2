@@ -67,6 +67,9 @@
   --footer-icon-color: var(--color-petrol-500);
   --footer-icon-color-hover: var(--color-petrol-700);
 
+  /* disabled buttons and boxes: a plain grey (the old value was a mauve that suited the pink) */
+  --color-grey-400: #b4bcc1;
+
   /* inputs: a soft grey with a thin outline; they turn white while you type in them */
   --color-grey-input: #e4e8eb;
   --color-grey-300-80: var(--color-grey-input);

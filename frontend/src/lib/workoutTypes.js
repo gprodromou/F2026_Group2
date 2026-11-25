@@ -17,5 +17,14 @@ export const TYPE_OPTIONS = [
   { value: OTHER, icon: '✏️' },
 ];
 
+// A workout can have several types (week 7: the entry form saves them joined, e.g.
+// "HIIT, Strength & Resistance"). This splits that text back into the separate types.
+export function splitTypes(text) {
+  return String(text || '')
+    .split(',')
+    .map((t) => t.trim())
+    .filter(Boolean);
+}
+
 // Just the names, without "Other": what the filter dropdown shows.
 export const WORKOUT_TYPE_NAMES = TYPE_OPTIONS.filter((t) => t.value !== OTHER).map((t) => t.value);

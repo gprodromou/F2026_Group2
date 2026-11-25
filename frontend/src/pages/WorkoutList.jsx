@@ -22,7 +22,7 @@ import { useAuth } from '../state/AuthContext';
 import { useApi } from '../api/client';
 import { listWorkouts } from '../api/workouts';
 import { NO_FILTER, isEmptyFilter } from '../lib/workoutFilter';
-import { WORKOUT_TYPE_NAMES } from '../lib/workoutTypes';
+import { WORKOUT_TYPE_NAMES, splitTypes } from '../lib/workoutTypes';
 import './WorkoutList.css';
 
 // 45 -> "45 min", 60 -> "1 h", 90 -> "1 h 30 min"
@@ -63,10 +63,12 @@ export function summarise(workouts) {
       calories += Number(w.calories_burned) || 0;
       hasCalories = true;
     }
-    perType.set(w.exercise_type, (perType.get(w.exercise_type) || 0) + mins);
+    // A workout with several types shares its time equally between them.
+    const types = splitTypes(w.exercise_type);
+    types.forEach((t) => perType.set(t, (perType.get(t) || 0) + mins / types.length));
   });
   const bars = [...perType.entries()]
-    .map(([type, mins]) => ({ type, minutes: mins }))
+    .map(([type, mins]) => ({ type, minutes: Math.round(mins) }))
     .sort((a, b) => b.minutes - a.minutes || a.type.localeCompare(b.type));
   const longest = bars.length ? bars[0].minutes : 0;
   return {
@@ -103,8 +105,8 @@ export default function WorkoutList() {
       // Remember custom types so the user can filter by them too.
       setCustomTypes((known) => {
         const extra = rows
-          .map((w) => w.exercise_type)
-          .filter((t) => t && !WORKOUT_TYPE_NAMES.includes(t) && !known.includes(t));
+          .flatMap((w) => splitTypes(w.exercise_type)) // "HIIT, Yoga" -> "HIIT", "Yoga"
+          .filter((t) => !WORKOUT_TYPE_NAMES.includes(t) && !known.includes(t));
         return extra.length ? [...known, ...new Set(extra)].sort() : known;
       });
     } catch (e) {

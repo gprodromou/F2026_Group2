@@ -1,6 +1,9 @@
-// SiteMenu.jsx: the three-line menu button of the Login / Register frame (Yanna, week 7).
+// SiteMenu.jsx: the three-line menu button (Yanna, week 7). Used by the Login / Register frame,
+// and by the main header (Layout) when someone is signed in.
 // Clicking it slides a panel in from the right with:
-//   Home, About, Services, Contact us, then Log in and Register (or Log out when signed in).
+//   signed out: Home, About, Services, Contact us, then Log in and Register
+//   signed in:  Home, Log Workout, History, Goals (+ Admin for administrators), then Log out
+//               (the same links as Nav.jsx, so the two can never disagree)
 // About / Services / Contact us are sections of the Landing page (/#about ...), the same
 // links as the main header (Nav.jsx).
 //
@@ -15,9 +18,10 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import LogoutButton from './LogoutButton';
 import { useAuth } from '../state/AuthContext';
+import { SIGNED_IN_LINKS, ADMIN_LINKS } from './Nav';
 import './SiteMenu.css';
 
-const LINKS = [
+const PUBLIC_LINKS = [
   { to: '/', label: 'Home' },
   { to: '/#about', label: 'About' },
   { to: '/#services', label: 'Services' },
@@ -25,7 +29,10 @@ const LINKS = [
 ];
 
 export default function SiteMenu() {
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, user } = useAuth();
+  const isAdmin = isSignedIn && String(user.role).toLowerCase() === 'admin';
+  let links = PUBLIC_LINKS;
+  if (isSignedIn) links = isAdmin ? [...SIGNED_IN_LINKS, ...ADMIN_LINKS] : SIGNED_IN_LINKS;
   const [open, setOpen] = useState(false);
   const openButton = useRef(null);
   const closeButton = useRef(null);
@@ -92,7 +99,7 @@ export default function SiteMenu() {
         </button>
 
         <nav className="site-menu__nav" aria-label="Site menu">
-          {LINKS.map((link) => (
+          {links.map((link) => (
             <Link key={link.to} to={link.to} className="site-menu__link" onClick={close}>
               {link.label}
             </Link>

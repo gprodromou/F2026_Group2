@@ -1,5 +1,5 @@
 // AppShell.test.jsx: tests for the frame of the signed-in screens (NFR02, NFR05):
-// the title, the three-line menu button and the footer.
+// the logo, the three-line slide-out menu, the title and the footer.
 
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
@@ -29,15 +29,18 @@ function renderShell(role = 'user') {
   );
 }
 
-const menuButton = () => screen.getByRole('button', { name: 'Menu' });
+const menuButton = () => screen.getByRole('button', { name: 'Open menu' });
+const menu = () => screen.queryByRole('navigation', { name: 'Site menu' });
 
+// Week 7 (Yanna): the header is the logo + the slide-out menu (SiteMenu), the same as Layout.
 describe('AppShell', () => {
-  test('shows the title, the page and the menu button, with the menu closed', () => {
+  test('shows the logo, the title, the page and the menu button, with the menu closed', () => {
     renderShell();
+    expect(screen.getByRole('link', { name: 'fit4you' }).getAttribute('href')).toBe('/');
     expect(screen.getByRole('heading', { name: 'Workout History' })).toBeTruthy();
     expect(screen.getByText('Page content')).toBeTruthy();
     expect(menuButton().getAttribute('aria-expanded')).toBe('false');
-    expect(screen.queryByRole('navigation', { name: 'Main navigation' })).toBeNull();
+    expect(menu()).toBeNull();
   });
 
   test('the three-line button opens the menu with the signed-in links and Log out', () => {
@@ -45,10 +48,11 @@ describe('AppShell', () => {
     fireEvent.click(menuButton());
 
     expect(menuButton().getAttribute('aria-expanded')).toBe('true');
-    const nav = screen.getByRole('navigation', { name: 'Main navigation' });
+    const nav = menu();
     expect(nav.textContent).toContain('Home');
-    expect(nav.textContent).toContain('Log workout');
+    expect(nav.textContent).toContain('Log Workout');
     expect(nav.textContent).toContain('History');
+    expect(nav.textContent).toContain('Goals');
     expect(screen.getByRole('button', { name: /log out/i })).toBeTruthy();
     expect(screen.queryByRole('link', { name: 'Admin' })).toBeNull();
   });
@@ -62,23 +66,23 @@ describe('AppShell', () => {
   test('choosing a link goes to that page', () => {
     renderShell();
     fireEvent.click(menuButton());
-    fireEvent.click(screen.getByRole('link', { name: 'Log workout' }));
+    fireEvent.click(screen.getByRole('link', { name: 'Log Workout' }));
     expect(screen.getByText('Workout entry page')).toBeTruthy();
   });
 
-  test('Escape closes the menu and the button keeps the focus', () => {
+  test('Escape closes the menu and the button gets the focus back', () => {
     renderShell();
     fireEvent.click(menuButton());
     fireEvent.keyDown(document, { key: 'Escape' });
-    expect(screen.queryByRole('navigation', { name: 'Main navigation' })).toBeNull();
+    expect(menu()).toBeNull();
     expect(document.activeElement).toBe(menuButton());
   });
 
-  test('clicking outside the menu closes it', () => {
-    renderShell();
+  test('clicking the dark area beside the menu closes it', () => {
+    const { container } = renderShell();
     fireEvent.click(menuButton());
-    fireEvent.mouseDown(screen.getByText('Page content'));
-    expect(screen.queryByRole('navigation', { name: 'Main navigation' })).toBeNull();
+    fireEvent.click(container.querySelector('.site-menu__overlay'));
+    expect(menu()).toBeNull();
   });
 
   test('Log out in the menu signs the user out', () => {

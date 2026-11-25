@@ -5,21 +5,21 @@
 .history-card {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--space-4);
   box-sizing: border-box;
   background: var(--color-bg-card-login);
   border: var(--border-width) solid var(--color-border-card-login);
-  border-radius: var(--card-radius);
-  padding: var(--card-padding);
+  border-radius: calc(var(--card-radius) * 0.75);   /* week 7: a little less round */
+  padding: var(--space-5) var(--space-6);
 }
 
 /* The grey rounded panels (filters, summary and each workout) */
 .history-panel {
   min-width: 0;
-  border-radius: var(--radius-lg);
-  padding: var(--space-4) var(--space-6);
-  background: var(--color-grey-300-80);
-  box-shadow: 0 var(--space-1) var(--space-3) color-mix(in srgb, var(--color-ink) 30%, transparent);
+  border-radius: var(--radius-md);   /* week 7: less round, the same grey as the Workout Log */
+  padding: var(--space-3) var(--space-5);
+  background: var(--card-bg);
+  box-shadow: 0 var(--space-1) var(--space-3) color-mix(in srgb, var(--color-ink) 12%, transparent);
 }
 
 .history-panel__title {
@@ -58,8 +58,8 @@
   flex: 1 1 7rem;
   flex-direction: column;
   min-width: 0;
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-lg);
+  padding: var(--space-2) var(--space-4);
+  border-radius: calc(var(--radius-md) * 0.8);   /* week 7: the white tiles a bit less round */
   background: color-mix(in srgb, var(--color-white) 55%, transparent);
 }
 
@@ -69,7 +69,7 @@
 }
 
 .history-tile__value {
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-lg);
   font-weight: var(--font-weight-bold);
   line-height: var(--line-height-base);
   overflow-wrap: anywhere;
@@ -144,7 +144,7 @@
 }
 
 .history-item__type {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-md);
   font-weight: var(--font-weight-bold);
   overflow-wrap: anywhere;
 }

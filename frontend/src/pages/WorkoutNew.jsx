@@ -1,27 +1,41 @@
 // WorkoutNew.jsx: the workout entry screen (RQ06, UC05, NFR06).
 // ONE screen, not a wizard (NFR06: logging a workout takes few steps).
-// The user fills in: date, duration, calories, type and equipment.
-//   - Type and equipment are lists. "Other" opens an input bar for the user's own text.
-//   - The checks before sending use lib/validate.js (NFR04).
-//   - The workout is sent through Bogdan C's API client (api/client.js), which attaches the
-//     login token. The user id is NEVER sent: the server takes it from the token.
-//   - While it is sending the button is disabled; if it fails, the message shows and
-//     everything typed stays where it was.
+//   left:  Date, Duration and Calories, stacked, the same size
+//   right: Type of Workout and Equipment Used, sharing the height equally
+//
+// Week 7 (Yanna):
+//   - Every value is a dropdown: the date is DateSelect (Day / Month / Year + calendar, the
+//     same as Register's birthday), hours / minutes / seconds and calories are lists too.
+//   - Type and equipment: you can choose more than one. After choosing, a small "+" adds
+//     another dropdown to the right (they wrap to the next line when the row is full), and
+//     every extra one has an "x" to remove it. The database keeps ONE text per workout, so
+//     several are saved joined: "HIIT, Strength & Resistance". "Other" opens an input bar.
+//   - The emojis are now petrol line icons (components/WorkoutIcons.jsx).
+//
+// Unchanged: the checks before sending use lib/validate.js (NFR04); the workout is sent
+// through Bogdan C's API client (api/client.js), which attaches the login token, and the
+// user id is NEVER sent; while sending, the button is disabled; if it fails, the message
+// shows and everything chosen stays.
 //
 // Not on this screen yet: the design's "Name" and "Notes" boxes. The workouts table has no
-// columns for them (db/workouts.js saves date, type, duration, calories and equipment), so
-// anything typed there would be lost. They come back when the backend can store them.
+// columns for them (db/workouts.js saves date, type, duration, calories and equipment).
 
 import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { Button, Input, FormError } from '../components/ui';
+import { Button, FormError } from '../components/ui';
+import DateSelect from '../components/DateSelect';
+import { TypeIcon, EquipmentIcon } from '../components/WorkoutIcons';
 import { validateForm, required, positiveNumber, nonNegativeNumber, pastDate } from '../lib/validate';
+import { isoDate, isoToParts, partsToIso, yearRange } from '../lib/dates';
 import { useAuth } from '../state/AuthContext';
 import { useApi } from '../api/client';
 import { OTHER, TYPE_OPTIONS } from '../lib/workoutTypes';
 import './WorkoutNew.css';
 
 const HISTORY_PATH = '/workouts'; // where the user lands after saving (the history screen)
+const YEARS_BACK = 5;             // how far back the Year dropdown goes
+
+const TYPES = TYPE_OPTIONS.map((t) => t.value);
 
 // The basic equipment, not too many and not too few. "None" covers bodyweight workouts.
 const EQUIPMENT = [
@@ -48,26 +62,34 @@ const EQUIPMENT = [
   OTHER,
 ];
 
-// Today as YYYY-MM-DD in the user's own time zone (the default date of a new workout).
-function today() {
-  const d = new Date();
-  const pad = (n) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
+// What the duration and calories dropdowns offer.
+const range = (from, to, step = 1) =>
+  Array.from({ length: Math.floor((to - from) / step) + 1 }, (_, i) => from + i * step);
+const HOURS = range(0, 12);
+const MINUTES = range(0, 59);
+const SECONDS = range(0, 59);
+const CALORIES = range(0, 3000, 25);
 
-const INITIAL_VALUES = () => ({
-  date: today(),
-  hours: '',
-  minutes: '',
-  seconds: '',
-  calories: '',
-  type: '',
-  otherType: '',
-  equipment: '',
-  otherEquipment: '',
-});
+const INITIAL_VALUES = () => {
+  const { day, month, year } = isoToParts(isoDate(new Date())); // today
+  return {
+    dateDay: day,
+    dateMonth: month,
+    dateYear: year,
+    hours: '',
+    minutes: '',
+    seconds: '',
+    calories: '',
+    types: [''],      // one dropdown to start with; "+" adds more
+    otherType: '',
+    equipment: [''],
+    otherEquipment: '',
+  };
+};
 
-// Hours, minutes and seconds -> total seconds. An empty box counts as 0.
+const dateOf = (v) => partsToIso({ day: v.dateDay, month: v.dateMonth, year: v.dateYear });
+
+// Hours, minutes and seconds -> total seconds. An empty dropdown counts as 0.
 function totalSeconds(v) {
   return Number(v.hours || 0) * 3600 + Number(v.minutes || 0) * 60 + Number(v.seconds || 0);
 }
@@ -83,49 +105,95 @@ function durationError(all) {
 }
 
 const RULES = {
-  date: (v) => pastDate(v, 'Date'),
+  date: (_, all) => pastDate(dateOf(all), 'Date'),
   duration: (_, all) => durationError(all),
   calories: (v) => nonNegativeNumber(v, 'Calories'),
-  type: (v) => (v ? null : 'Choose a workout type'),
-  otherType: (v, all) => (all.type === OTHER ? required(v, 'Your workout type') : null),
-  equipment: (v) => (v ? null : 'Choose the equipment you used'),
-  otherEquipment: (v, all) => (all.equipment === OTHER ? required(v, 'Your equipment') : null),
+  types: (v) => (v.some(Boolean) ? null : 'Choose a workout type'),
+  otherType: (v, all) => (all.types.includes(OTHER) ? required(v, 'Your workout type') : null),
+  equipment: (v) => (v.some(Boolean) ? null : 'Choose the equipment you used'),
+  otherEquipment: (v, all) => (all.equipment.includes(OTHER) ? required(v, 'Your equipment') : null),
 };
+
+// Several choices -> one text, with "Other" replaced by what the user typed.
+function joinChoices(choices, otherText) {
+  return choices
+    .filter(Boolean)
+    .map((c) => (c === OTHER ? otherText.trim() : c))
+    .join(', ');
+}
 
 // The JSON Marius's workout route receives (the names db/workouts.js uses). The duration goes
 // as whole minutes, rounded up, because the duration column is an integer. There is no user id.
 function buildPayload(v) {
   return {
-    workoutDate: v.date,
-    exerciseType: v.type === OTHER ? v.otherType.trim() : v.type,
+    workoutDate: dateOf(v),
+    exerciseType: joinChoices(v.types, v.otherType),
     duration: Math.ceil(totalSeconds(v) / 60),
     caloriesBurned: Number(v.calories),
-    equipmentUsed: v.equipment === OTHER ? v.otherEquipment.trim() : v.equipment,
+    equipmentUsed: joinChoices(v.equipment, v.otherEquipment),
   };
 }
 
-// A label + dropdown, styled like the UI kit's Input (same classes as components/ui/Input).
-function SelectField({ id, label, value, onChange, error, disabled, placeholder, children }) {
-  const errorId = `${id}-error`;
+// One small dropdown with a hidden label (the panel title says what it is).
+function NumberSelect({ id, label, value, onChange, options, placeholder, format = (n) => n, disabled, hideLabel }) {
   return (
-    <div className="field">
-      <label htmlFor={id} className="field__label">{label}</label>
-      <select
-        id={id}
-        name={id}
-        className={`field__input${error ? ' field__input--error' : ''}`}
-        value={value}
-        onChange={onChange}
-        disabled={disabled}
-        aria-invalid={error ? 'true' : undefined}
-        aria-describedby={error ? errorId : undefined}
-      >
-        <option value="">{placeholder}</option>
-        {children}
+    <div className="workout-select">
+      <label htmlFor={id} className={`field__label${hideLabel ? ' field__label--hidden' : ''}`}>{label}</label>
+      <select id={id} name={id} className="select-pill" value={value} onChange={onChange} disabled={disabled}>
+        <option value="" disabled>{placeholder}</option>
+        {options.map((n) => (
+          <option key={n} value={String(n)}>{format(n)}</option>
+        ))}
       </select>
-      <div className="field__error">
-        <FormError message={error} id={errorId} />
-      </div>
+    </div>
+  );
+}
+
+// Type / equipment: a row of small dropdowns, each as wide as its text, with "+" after the
+// last one (once something is chosen) and "x" on every extra one. A choice already made in
+// one dropdown cannot be picked again in another.
+function ChoiceRow({ name, label, noun, placeholder, choices, options, onChange, onAdd, onRemove, error, disabled }) {
+  const last = choices[choices.length - 1];
+  const canAdd = Boolean(last) && choices.length < options.length;
+
+  return (
+    <div className="choice-row">
+      {choices.map((choice, i) => {
+        const id = i === 0 ? name : `${name}-${i + 1}`;
+        return (
+          <span className="choice" key={id}>
+            <label htmlFor={id} className="field__label field__label--hidden">
+              {i === 0 ? label : `${label} ${i + 1}`}
+            </label>
+            <select
+              id={id}
+              className={`select-pill select-pill--fit${i === 0 && error ? ' field__input--error' : ''}`}
+              value={choice}
+              onChange={(e) => onChange(i, e.target.value)}
+              disabled={disabled}
+              aria-invalid={i === 0 && error ? 'true' : undefined}
+              aria-describedby={i === 0 && error ? `${name}-error` : undefined}
+            >
+              <option value="">{placeholder}</option>
+              {options.map((o) => (
+                <option key={o} value={o} disabled={o !== choice && choices.includes(o)}>{o}</option>
+              ))}
+            </select>
+            {i > 0 && (
+              <button type="button" className="choice__remove" onClick={() => onRemove(i)}
+                aria-label={`Remove ${noun} ${i + 1}`} disabled={disabled}>
+                <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 3l6 6M9 3l-6 6" /></svg>
+              </button>
+            )}
+          </span>
+        );
+      })}
+      {canAdd && (
+        <button type="button" className="choice__add" onClick={onAdd}
+          aria-label={`Add another ${noun}`} disabled={disabled}>
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10" /></svg>
+        </button>
+      )}
     </div>
   );
 }
@@ -142,12 +210,24 @@ export default function WorkoutNew() {
   // Only signed-in users can log workouts.
   if (!isSignedIn) return <Navigate to="/login" replace />;
 
-  const typeIcon = TYPE_OPTIONS.find((t) => t.value === values.type)?.icon || '💪';
+  const thisYear = new Date().getFullYear();
 
   function handleChange(event) {
     const { name, value } = event.target;
     setValues((current) => ({ ...current, [name]: value }));
   }
+
+  function handleDate({ day, month, year }) {
+    setValues((current) => ({ ...current, dateDay: day, dateMonth: month, dateYear: year }));
+  }
+
+  // The same three actions for both rows: choose, add one, remove one.
+  const listActions = (key) => ({
+    onChange: (index, value) =>
+      setValues((c) => ({ ...c, [key]: c[key].map((x, i) => (i === index ? value : x)) })),
+    onAdd: () => setValues((c) => ({ ...c, [key]: [...c[key], ''] })),
+    onRemove: (index) => setValues((c) => ({ ...c, [key]: c[key].filter((_, i) => i !== index) })),
+  });
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -164,7 +244,7 @@ export default function WorkoutNew() {
       navigate(HISTORY_PATH);
     } catch (error) {
       // The client already turned the answer into a readable message (and handled a 401).
-      if (error.status !== 401) setFormError(error.message); // everything typed stays
+      if (error.status !== 401) setFormError(error.message); // everything chosen stays
     } finally {
       setSubmitting(false);
     }
@@ -175,77 +255,81 @@ export default function WorkoutNew() {
       <h1 className="workout-page__title">Workout Log</h1>
 
       <form className="workout-card" onSubmit={handleSubmit} noValidate>
-        <h2 className="workout-card__title">Stats</h2>
-
         <div className="workout-grid">
-          <div className="workout-column">
-            <div className="workout-panel">
-              <Input id="date" name="date" type="date" label="Date"
-                value={values.date} onChange={handleChange} error={errors.date} disabled={submitting} />
-            </div>
+          {/* ---------- left: Date, Duration, Calories ---------- */}
+          <div className="workout-column workout-column--left">
+            <fieldset className="workout-panel">
+              <legend className="workout-panel__title">Date</legend>
+              <DateSelect
+                ids={{ day: 'dateDay', month: 'dateMonth', year: 'dateYear' }}
+                value={{ day: values.dateDay, month: values.dateMonth, year: values.dateYear }}
+                onChange={handleDate}
+                years={yearRange(thisYear, thisYear - YEARS_BACK)}
+                min={`${thisYear - YEARS_BACK}-01-01`}
+                max={isoDate(new Date())}
+                disabled={submitting}
+              />
+              <FormError message={errors.date} id="date-error" />
+            </fieldset>
 
-            <div className="workout-row">
-              <fieldset className="workout-panel">
-                <legend className="workout-panel__title">Duration</legend>
-                <div className="workout-inline">
-                  <Input id="hours" name="hours" type="number" min="0" label="Hours"
-                    value={values.hours} onChange={handleChange} disabled={submitting} />
-                  <Input id="minutes" name="minutes" type="number" min="0" label="Minutes"
-                    value={values.minutes} onChange={handleChange} disabled={submitting} />
-                  <Input id="seconds" name="seconds" type="number" min="0" label="Seconds"
-                    value={values.seconds} onChange={handleChange} disabled={submitting} />
-                </div>
-                <FormError message={errors.duration} id="duration-error" />
-              </fieldset>
-
-              <div className="workout-panel">
-                <h3 className="workout-panel__title">Calories</h3>
-                <Input id="calories" name="calories" type="number" min="0" label="Calories (kcal)"
-                  value={values.calories} onChange={handleChange} error={errors.calories} disabled={submitting} />
+            <fieldset className="workout-panel">
+              <legend className="workout-panel__title">Duration</legend>
+              <div className="workout-inline">
+                <NumberSelect id="hours" label="Hours" placeholder="0" options={HOURS}
+                  value={values.hours} onChange={handleChange} disabled={submitting} />
+                <NumberSelect id="minutes" label="Minutes" placeholder="0" options={MINUTES}
+                  value={values.minutes} onChange={handleChange} disabled={submitting} />
+                <NumberSelect id="seconds" label="Seconds" placeholder="0" options={SECONDS}
+                  value={values.seconds} onChange={handleChange} disabled={submitting} />
               </div>
-            </div>
+              <FormError message={errors.duration} id="duration-error" />
+            </fieldset>
+
+            <fieldset className="workout-panel">
+              <legend className="workout-panel__title">Calories</legend>
+              <NumberSelect id="calories" label="Calories (kcal)" hideLabel placeholder="Choose kcal"
+                options={CALORIES} format={(n) => `${n} kcal`}
+                value={values.calories} onChange={handleChange} disabled={submitting} />
+              <FormError message={errors.calories} id="calories-error" />
+            </fieldset>
           </div>
 
-          <div className="workout-column">
-            <div className="workout-panel">
-              <h3 className="workout-panel__title">Type of Workout</h3>
+          {/* ---------- right: Type of Workout, Equipment Used ---------- */}
+          <div className="workout-column workout-column--right">
+            <fieldset className="workout-panel">
+              <legend className="workout-panel__title">Type of Workout</legend>
               <div className="workout-choice">
-                <span className="workout-choice__icon" aria-hidden="true">{typeIcon}</span>
+                <span className="workout-choice__icon"><TypeIcon type={values.types.find(Boolean)} /></span>
                 <div className="workout-choice__fields">
-                  <SelectField id="type" label="Type of workout" placeholder="Choose a type"
-                    value={values.type} onChange={handleChange} error={errors.type} disabled={submitting}>
-                    {TYPE_OPTIONS.map((t) => (
-                      <option key={t.value} value={t.value}>{t.value}</option>
-                    ))}
-                  </SelectField>
-                  {values.type === OTHER && (
-                    <Input id="otherType" name="otherType" label="Your workout type"
-                      placeholder="e.g., Boxing" value={values.otherType} onChange={handleChange}
-                      error={errors.otherType} disabled={submitting} />
+                  <ChoiceRow name="type" label="Type of workout" noun="type" placeholder="Choose a type" choices={values.types}
+                    options={TYPES} error={errors.types} disabled={submitting} {...listActions('types')} />
+                  {values.types.includes(OTHER) && (
+                    <OtherInput id="otherType" label="Your workout type" placeholder="e.g., Boxing"
+                      value={values.otherType} onChange={handleChange} error={errors.otherType} disabled={submitting} />
                   )}
+                  <FormError message={errors.types} id="type-error" />
                 </div>
               </div>
-            </div>
+            </fieldset>
 
-            <div className="workout-panel">
-              <h3 className="workout-panel__title">Equipment Used</h3>
+            <fieldset className="workout-panel">
+              <legend className="workout-panel__title">Equipment Used</legend>
               <div className="workout-choice">
-                <span className="workout-choice__icon" aria-hidden="true">🏋️</span>
+                <span className="workout-choice__icon">
+                  <EquipmentIcon equipment={values.equipment.find(Boolean)} />
+                </span>
                 <div className="workout-choice__fields">
-                  <SelectField id="equipment" label="Equipment used" placeholder="Choose equipment"
-                    value={values.equipment} onChange={handleChange} error={errors.equipment} disabled={submitting}>
-                    {EQUIPMENT.map((e) => (
-                      <option key={e} value={e}>{e}</option>
-                    ))}
-                  </SelectField>
-                  {values.equipment === OTHER && (
-                    <Input id="otherEquipment" name="otherEquipment" label="Your equipment"
-                      placeholder="e.g., Battle ropes" value={values.otherEquipment} onChange={handleChange}
-                      error={errors.otherEquipment} disabled={submitting} />
+                  <ChoiceRow name="equipment" label="Equipment used" noun="equipment" placeholder="Choose equipment" choices={values.equipment}
+                    options={EQUIPMENT} error={errors.equipment} disabled={submitting} {...listActions('equipment')} />
+                  {values.equipment.includes(OTHER) && (
+                    <OtherInput id="otherEquipment" label="Your equipment" placeholder="e.g., Battle ropes"
+                      value={values.otherEquipment} onChange={handleChange} error={errors.otherEquipment}
+                      disabled={submitting} />
                   )}
+                  <FormError message={errors.equipment} id="equipment-error" />
                 </div>
               </div>
-            </div>
+            </fieldset>
           </div>
         </div>
 
@@ -258,5 +342,19 @@ export default function WorkoutNew() {
         </div>
       </form>
     </section>
+  );
+}
+
+// The input bar that opens under the dropdowns when "Other" is chosen (label hidden: the
+// placeholder and the panel title say what it is).
+function OtherInput({ id, label, placeholder, value, onChange, error, disabled }) {
+  return (
+    <div className="workout-other">
+      <label htmlFor={id} className="field__label field__label--hidden">{label}</label>
+      <input id={id} name={id} className={`field__input${error ? ' field__input--error' : ''}`}
+        placeholder={placeholder} value={value} onChange={onChange} disabled={disabled}
+        aria-invalid={error ? 'true' : undefined} aria-describedby={error ? `${id}-error` : undefined} />
+      <FormError message={error} id={`${id}-error`} />
+    </div>
   );
 }

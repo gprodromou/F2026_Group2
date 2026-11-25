@@ -20,14 +20,14 @@ import Goals from './pages/Goals';             // Bogdan C, week 6
 import TemplateList from './pages/admin/TemplateList'; // Andreas, week 5
 
 export const routes = [
-  // Goals has its own frame (AppShell: title, three-line menu, footer), as in Yanna's design,
-  // so it sits outside Layout: no top bar with links and no second footer.
+  // Goals and History have their own frame (AppShell: logo, three-line menu, title, footer),
+  // so they sit outside Layout: one header and one footer.
   { path: '/goals', element: <Goals /> },               // goals with progress (RQ11, UC07)
+  { path: '/workouts', element: <WorkoutList /> },      // history (RQ07), same frame as Goals
   {
     element: <Layout />,
     children: [
       { path: '/', element: <Landing /> },
-      { path: '/workouts', element: <WorkoutList /> },       // history (RQ07)
       { path: '/workouts/new', element: <WorkoutNew /> },
       // Admin only: RequireAdmin sends everyone else away.
       { path: '/admin/templates', element: <RequireAdmin><TemplateList /></RequireAdmin> },

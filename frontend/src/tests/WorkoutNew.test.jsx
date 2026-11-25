@@ -43,6 +43,10 @@ function renderScreen() {
 const set = (label, value) =>
   fireEvent.change(screen.getByLabelText(label), { target: { value } });
 const press = (name) => fireEvent.click(screen.getByRole('button', { name }));
+// Week 7: the date is three dropdowns + a calendar (DateSelect); picking in the calendar
+// fills all three, so the tests choose the date there.
+const setDate = (iso) =>
+  fireEvent.change(screen.getByLabelText('Choose from a calendar'), { target: { value: iso } });
 
 function fillValid(overrides = {}) {
   const v = {
@@ -53,7 +57,7 @@ function fillValid(overrides = {}) {
     equipment: 'Dumbbells',
     ...overrides,
   };
-  set('Date', v.date);
+  setDate(v.date);
   set('Minutes', v.minutes);
   set('Calories (kcal)', v.calories);
   set('Type of workout', v.type);
@@ -75,9 +79,10 @@ describe('WorkoutNew', () => {
     expect(screen.getByText('Login page')).toBeTruthy();
   });
 
-  test('the Stats heading and the whole form are on one screen', () => {
+  test('the whole form is on one screen (week 7: without the "Stats" heading)', () => {
     renderScreen();
-    expect(screen.getByRole('heading', { name: 'Stats' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Workout Log' })).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: 'Stats' })).toBeNull();
     expect(screen.getByLabelText('Type of workout')).toBeTruthy();
     expect(screen.getByLabelText('Equipment used')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Save workout' })).toBeTruthy();
@@ -120,13 +125,63 @@ describe('WorkoutNew', () => {
     expect(global.fetch).not.toHaveBeenCalled();
   });
 
-  test('negative calories are refused', () => {
-    mockFetch();
+  test('duration and calories are dropdowns; calories start at 0, so nothing negative can be chosen', () => {
     renderScreen();
-    fillValid({ calories: '-5' });
+    ['Hours', 'Minutes', 'Seconds', 'Calories (kcal)'].forEach((label) => {
+      expect(screen.getByLabelText(label).tagName).toBe('SELECT');
+    });
+    const calories = Array.from(screen.getByLabelText('Calories (kcal)').options)
+      .map((o) => o.value)
+      .filter(Boolean);
+    expect(calories[0]).toBe('0');
+    expect(calories.some((v) => Number(v) < 0)).toBe(false);
+  });
+
+  test('the date is Day / Month / Year dropdowns, starting on today', () => {
+    renderScreen();
+    const now = new Date();
+    expect(screen.getByLabelText('Day').value).toBe(String(now.getDate()));
+    expect(screen.getByLabelText('Month').value).toBe(String(now.getMonth() + 1));
+    expect(screen.getByLabelText('Year').value).toBe(String(now.getFullYear()));
+  });
+
+  test('"+" appears once a type is chosen and adds another type next to it', () => {
+    renderScreen();
+    expect(screen.queryByRole('button', { name: 'Add another type' })).toBeNull();
+
+    set('Type of workout', 'HIIT');
+    press('Add another type');
+
+    const second = screen.getByLabelText('Type of workout 2');
+    expect(second.value).toBe('');
+    // a type already chosen cannot be chosen again in the second dropdown
+    expect(Array.from(second.options).find((o) => o.value === 'HIIT').disabled).toBe(true);
+  });
+
+  test('an extra type can be removed again with its x', () => {
+    renderScreen();
+    set('Type of workout', 'HIIT');
+    press('Add another type');
+    expect(screen.getByLabelText('Type of workout 2')).toBeTruthy();
+
+    press('Remove type 2');
+    expect(screen.queryByLabelText('Type of workout 2')).toBeNull();
+  });
+
+  test('several types and pieces of equipment are saved joined into one text', async () => {
+    mockFetch({ status: 201, body: { workoutId: 1 } });
+    renderScreen();
+    fillValid({ type: 'HIIT', equipment: 'Jump rope' });
+    press('Add another type');
+    set('Type of workout 2', 'Strength & Resistance');
+    press('Add another equipment');
+    set('Equipment used 2', 'Kettlebell');
     press('Save workout');
 
-    expect(screen.getByText('Calories cannot be negative')).toBeTruthy();
+    await screen.findByText('Workout history');
+    const body = JSON.parse(global.fetch.mock.calls[0][1].body);
+    expect(body.exerciseType).toBe('HIIT, Strength & Resistance');
+    expect(body.equipmentUsed).toBe('Jump rope, Kettlebell');
   });
 
   test('Other opens an input bar for the type, and it must be filled in', () => {

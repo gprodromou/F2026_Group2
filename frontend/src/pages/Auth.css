@@ -54,11 +54,21 @@
   font-size: calc(var(--font-size-2xl) * 0.85);
 }
 .auth-layout .auth-form { gap: var(--space-1); }
+.auth-layout .auth-actions { margin-top: 0; }   /* Log In / Continue closer to the last box */
 .auth-layout .auth-footer { margin-top: var(--space-3); }
+
+/* While the form is being sent, the boxes are disabled. Instead of switching to the dark
+   "disabled" grey (it flashed), they keep their colour and just fade a little. */
+.auth-card .field__input:disabled {
+  background: var(--input-bg);
+  opacity: 0.6;
+  cursor: progress;
+}
+.auth-card .btn:disabled { cursor: progress; }
 
 /* smaller text and boxes, in the frame and in the Landing login card */
 .auth-card .field__input,
-.auth-card .stat-unit__select {
+.auth-card .select-pill {
   padding: var(--space-2) var(--space-3);
   font-size: var(--font-size-sm);
 }
@@ -128,12 +138,6 @@
 }
 .stat-row--no-decimal .stat-unit { flex: 0 0 4.5rem; }
 
-/* Birthday: [Day] [Month] [Year] [calendar] */
-.stat-row--date {
-  display: grid;
-  grid-template-columns: 4.25rem minmax(0, 1fr) 5.25rem var(--space-6);
-}
-
 /* errors in this step are shown once per group, under the row, so no space is
    reserved under each small box */
 .stat-row .field__error { display: none; }
@@ -148,96 +152,6 @@
 
 .stat-unit {
   flex: 0 0 4.5rem;
-}
-
-/* the unit dropdown: a pill like the input boxes */
-.stat-unit__select {
-  width: 100%;
-  font-family: inherit;
-  color: var(--input-text);
-  background-color: var(--input-bg);
-  border: var(--border-width-thin) solid var(--input-border);
-  border-radius: var(--input-radius);
-  cursor: pointer;
-}
-.stat-unit__select:focus {
-  outline: none;
-  background-color: var(--input-bg-focus);
-  border-color: var(--input-border-focus);
-  box-shadow: var(--shadow-focus);
-}
-
-/* Browsers that let us style the open list (Chrome and Edge): rounded list, petrol
-   highlight instead of the system blue. Other browsers keep their own list. */
-@supports (appearance: base-select) {
-  .stat-unit__select,
-  .stat-unit__select::picker(select) {
-    appearance: base-select;
-  }
-
-  .stat-unit__select::picker-icon {
-    color: var(--color-accent);
-  }
-
-  .stat-unit__select::picker(select) {
-    max-height: 15rem;   /* the year list is long: it scrolls inside */
-    margin-top: var(--space-1);
-    padding: var(--space-1);
-    border: var(--border-width-thin) solid var(--color-border-card);
-    border-radius: var(--menu-radius);
-    background: var(--menu-bg);
-    box-shadow: var(--menu-shadow);
-  }
-
-  .stat-unit__select option {
-    padding: var(--space-1) var(--space-3);
-    border-radius: calc(var(--menu-radius) - var(--space-1));
-    font-size: var(--font-size-sm);
-    cursor: pointer;
-  }
-  .stat-unit__select option::checkmark { display: none; }
-  .stat-unit__select option:hover,
-  .stat-unit__select option:focus-visible {
-    outline: none;
-    background: var(--menu-item-bg-hover);
-    color: var(--color-accent);
-  }
-  .stat-unit__select option:checked {
-    background: var(--color-accent);
-    color: var(--color-white);
-  }
-}
-
-/* the calendar button at the end of the birthday row */
-.stat-calendar {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--space-6);
-  height: var(--space-6);
-  border-radius: var(--radius-sm);
-  color: var(--color-accent);
-}
-.stat-calendar:hover { color: var(--btn-primary-bg-hover); }
-.stat-calendar__icon { width: 100%; height: 100%; }
-
-/* the real date input covers the icon but cannot be seen: clicking the icon opens it */
-.stat-calendar__input {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  cursor: pointer;
-}
-.stat-calendar:focus-within { box-shadow: var(--shadow-focus); }
-.stat-calendar__input::-webkit-calendar-picker-indicator {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  cursor: pointer;
 }
 
 /* ---------- Two-factor screens ---------- */
@@ -263,3 +177,6 @@
   font-weight: var(--font-weight-bold);
   word-break: break-all;
 }
+
+/* the message for the whole form (e.g. wrong password) sits centred above the button */
+.auth-form > .form-error { text-align: center; }

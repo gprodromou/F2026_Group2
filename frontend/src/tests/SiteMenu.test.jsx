@@ -93,6 +93,32 @@ describe('SiteMenu', () => {
     expect(screen.queryByRole('link', { name: 'Register' })).toBeNull();
   });
 
+  test('signed in: "Turn on 2FA" in the menu opens the two-factor setup screen', () => {
+    localStorage.setItem('token', makeToken());
+    renderAt('/login');
+    fireEvent.click(menuButton());
+
+    const twoFactor = screen.getByRole('link', { name: 'Turn on 2FA' });
+    expect(twoFactor.getAttribute('href')).toBe('/two-factor/setup');
+    expect(twoFactor.closest('.site-menu__panel')).toBeTruthy();
+  });
+
+  test('signed out: there is no "Turn on 2FA" (it needs an account)', () => {
+    renderAt('/login');
+    fireEvent.click(menuButton());
+    expect(screen.queryByRole('link', { name: 'Turn on 2FA' })).toBeNull();
+  });
+
+  test('administrators do not get "Turn on 2FA" (the server refuses 2FA for them: 403)', () => {
+    localStorage.setItem('token', makeToken('admin'));
+    renderAt('/login');
+    fireEvent.click(menuButton());
+
+    expect(screen.getByRole('link', { name: 'Admin' })).toBeTruthy();
+    expect(screen.queryByRole('link', { name: 'Turn on 2FA' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Log out' })).toBeTruthy();
+  });
+
   test('an administrator also gets Admin in the menu', () => {
     localStorage.setItem('token', makeToken('admin'));
     renderAt('/login');

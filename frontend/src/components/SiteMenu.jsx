@@ -2,7 +2,8 @@
 // and by the main header (Layout) when someone is signed in.
 // Clicking it slides a panel in from the right with:
 //   signed out: Home, About, Services, Contact us, then Log in and Register
-//   signed in:  Home, Log Workout, History, Goals (+ Admin for administrators), then Log out
+//   signed in:  Home, Log Workout, History, Goals (+ Admin for administrators),
+//               then Turn on 2FA (not for administrators) and Log out
 //               (the same links as Nav.jsx, so the two can never disagree)
 // About / Services / Contact us are sections of the Landing page (/#about ...), the same
 // links as the main header (Nav.jsx).
@@ -20,6 +21,8 @@ import LogoutButton from './LogoutButton';
 import { useAuth } from '../state/AuthContext';
 import { SIGNED_IN_LINKS, ADMIN_LINKS } from './Nav';
 import './SiteMenu.css';
+
+const TWO_FACTOR_SETUP_PATH = '/two-factor/setup';
 
 const PUBLIC_LINKS = [
   { to: '/', label: 'Home' },
@@ -108,7 +111,22 @@ export default function SiteMenu() {
 
         <div className="site-menu__actions">
           {isSignedIn ? (
-            <LogoutButton />
+            <>
+              {/* week 7: turn on two-factor login from the menu. Not for administrators: the
+                  server refuses 2FA for them (403). Note: the setup page asks the server for a
+                  NEW key each time it opens, so once 2FA is on, do not open it again (the
+                  backend will answer 409 "2FA is already on" after the demo). */}
+              {!isAdmin && (
+              <Link to={TWO_FACTOR_SETUP_PATH} className="nav-button nav-button--primary site-menu__twofa" onClick={close}>
+                <svg viewBox="0 0 16 16" aria-hidden="true">
+                  <path d="M8 1.5l5 2v4c0 3.2-2.1 5.6-5 7-2.9-1.4-5-3.8-5-7v-4z" />
+                  <path d="M5.8 8.2l1.6 1.6 3-3.2" />
+                </svg>
+                Turn on 2FA
+              </Link>
+              )}
+              <LogoutButton />
+            </>
           ) : (
             <>
               <Link to="/login" className="nav-button nav-button--primary" onClick={close}>

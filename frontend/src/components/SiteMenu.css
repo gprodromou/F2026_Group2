@@ -123,3 +123,20 @@
   .site-menu__panel,
   .site-menu__bar { transition: none; }
 }
+
+/* "Turn on 2FA": a filled petrol (accent) button, with a small shield in front */
+.site-menu__twofa {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+.site-menu__twofa svg {
+  width: var(--space-4);
+  height: var(--space-4);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}

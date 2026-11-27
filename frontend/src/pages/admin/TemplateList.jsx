@@ -1,8 +1,7 @@
-// in one table, each row with an Edit and a Delete button.
+// in one table, each row with a Delete button.
 // Delete first asks "Are you sure?" and only calls the API after the admin confirms.
 
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useApi } from '../../api/client';
 import { Button, Modal } from '../../components/ui';
 
@@ -36,7 +35,6 @@ function toRows(kind, list) {
 
 export default function TemplateList() {
   const api = useApi();
-  const navigate = useNavigate();
 
   const [rows, setRows] = useState([]);       // all templates, both kinds
   const [loading, setLoading] = useState(true);
@@ -102,12 +100,6 @@ export default function TemplateList() {
                 <td>{row.type}</td>
                 <td>{row.description}</td>
                 <td>
-                  <Button
-                    variant="secondary"
-                    onClick={() => navigate(`/admin/templates/${row.kind}/${row.id}/edit`)}
-                  >
-                    Edit
-                  </Button>
                   <Button variant="secondary" onClick={() => setToDelete(row)}>
                     Delete
                   </Button>

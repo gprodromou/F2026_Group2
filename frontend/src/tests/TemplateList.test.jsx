@@ -66,3 +66,10 @@ test('closing the confirmation does not delete', async () => {
   expect(mockApi.del).not.toHaveBeenCalled();
   expect(screen.getByText('Run 5 km')).toBeTruthy();
 });
+
+test('the list shows no Edit button (it comes back with the form in week 7)', async () => {
+  showScreen();
+  await screen.findByText('Leg day');
+  expect(screen.queryByText('Edit')).toBeNull();
+  expect(screen.getAllByText('Delete').length).toBe(2);
+});
